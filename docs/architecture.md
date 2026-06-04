@@ -72,7 +72,6 @@ Prepare for Chunking
 
 The current ingestion pipeline supports baseline scientific PDF ingestion.
 
-```text
 PDF Upload
     ↓
 Save Raw File
@@ -84,3 +83,32 @@ Conservative Text Cleaning
 Skip Low-Text Pages
     ↓
 Export Structured JSON for Inspection
+
+## Metadata Strategy
+
+Metadata is attached during ingestion.
+
+This ensures every extracted page can be traced back to:
+
+- document
+- source type
+- trust level
+- parser
+- page number
+- ingestion time
+
+Current document metadata:
+
+```json
+{
+  "document_id": "...",
+  "filename": "...",
+  "source_type": "scientific_paper",
+  "trust_level": "verified",
+  "title": "...",
+  "author": "...",
+  "parser_name": "pymupdf",
+  "parser_version": "...",
+  "ingestion_status": "completed",
+  "created_at": "..."
+}

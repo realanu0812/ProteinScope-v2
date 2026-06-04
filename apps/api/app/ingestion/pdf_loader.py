@@ -3,17 +3,18 @@ from pathlib import Path
 from uuid import uuid4
 
 from app.ingestion.cleaner import clean_text, is_useful_text
-from app.ingestion.schemas import IngestedDocument, PageText
+from app.ingestion.schemas import IngestedDocument, PageText, DocumentMetadata
 
 
 def load_pdf(file_path: str, filename: str) -> IngestedDocument:
     """
     Extracts page-wise text from a PDF using PyMuPDF.
 
-    Why page-wise?
-    - Enables page-level citations
-    - Helps debugging extraction quality
-    - Makes future chunking easier
+    Metadata is attached during ingestion because downstream RAG depends on:
+    - citations
+    - filtering
+    - source trust separation
+    - debugging
     """
 
     pdf_path = Path(file_path)
@@ -22,31 +23,41 @@ def load_pdf(file_path: str, filename: str) -> IngestedDocument:
         raise FileNotFoundError(f"PDF file not found: {file_path}")
 
     document = pymupdf.open(file_path)
+    raw_metadata = document.metadata or {}
 
     pages = []
 
     for page_index, page in enumerate(document):
         raw_text = page.get_text("text")
         cleaned_text = clean_text(raw_text)
+        useful = is_useful_text(cleaned_text)
 
-        if not is_useful_text(cleaned_text):
+        if not useful:
             continue
 
         pages.append(
             PageText(
                 page_number=page_index + 1,
-                text=cleaned_text
+                text=cleaned_text,
+                char_count=len(cleaned_text),
+                is_empty=False
             )
         )
 
-    metadata = document.metadata or {}
-
-    return IngestedDocument(
+    metadata = DocumentMetadata(
         document_id=str(uuid4()),
         filename=filename,
         source_type="scientific_paper",
         trust_level="verified",
-        title=metadata.get("title") or None,
+        title=raw_metadata.get("title") or None,
+        author=raw_metadata.get("author") or None,
+        parser_name="pymupdf",
+        parser_version=pymupdf.version[0],
+        ingestion_status="completed"
+    )
+
+    return IngestedDocument(
+        metadata=metadata,
         page_count=len(pages),
         pages=pages
     )

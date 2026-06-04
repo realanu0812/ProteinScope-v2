@@ -155,3 +155,32 @@ Reason:
 - Avoids storing pages that only contain headers, footers, or page numbers
 
 This is a temporary baseline. Later, scanned pages will be routed to OCR instead of simply being skipped.
+
+## Decision 13: Attach Metadata During Ingestion
+
+We will attach document and page metadata during ingestion instead of waiting until retrieval.
+
+Reason:
+- Metadata is needed for citations
+- Metadata enables filtering by source type and trust level
+- Metadata helps debug poor retrieval results
+- Metadata supports future user/workspace isolation
+- Metadata supports parser/version tracking
+
+Each ingested document currently stores:
+- document_id
+- filename
+- source_type
+- trust_level
+- title
+- author
+- parser_name
+- parser_version
+- ingestion_status
+- created_at
+
+Each page currently stores:
+- page_number
+- text
+- char_count
+- is_empty
