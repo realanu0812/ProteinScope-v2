@@ -36,3 +36,11 @@ class IngestedDocument(BaseModel):
     metadata: DocumentMetadata
     page_count: int
     pages: List[PageText]
+
+
+class IngestionResponse(BaseModel):
+    status: str
+    message: str
+    output_path: Optional[str] = None
+    document: Optional[IngestedDocument] = None
+    error: Optional[str] = None
