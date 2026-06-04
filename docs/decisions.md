@@ -82,3 +82,31 @@ Reason:
 - Easier to switch between OpenAI, Gemini, local models, or OpenRouter
 - Better long-term maintainability
 - Cleaner architecture
+
+## Decision 8: Start PDF Ingestion with PyMuPDF
+
+We will start PDF ingestion using PyMuPDF.
+
+Reason:
+- Simple page-wise extraction
+- Easy to understand
+- Good baseline for scientific PDFs
+- Supports page-level citation tracking
+
+Alternatives considered:
+- Docling
+- Tesseract OCR
+
+Docling will be added later for layout-aware parsing, table extraction, and complex scientific PDFs.
+
+OCR will be added later for scanned documents.
+
+## Decision 9: Store Source Type and Trust Level from Ingestion
+
+Every ingested document will have a source_type and trust_level.
+
+Reason:
+- Scientific evidence and community experiences must remain separated
+- Helps retrieval routing
+- Prevents anecdotal data from being treated as verified evidence
+- Supports safer answer generation

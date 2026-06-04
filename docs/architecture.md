@@ -51,3 +51,19 @@ Reranker
 Answer Generator
     ↓
 Evidence vs Experience Response
+
+## Ingestion Pipeline
+
+ProteinScope uses a source-aware ingestion pipeline.
+
+Raw Source
+    ↓
+Load
+    ↓
+Parse
+    ↓
+Clean
+    ↓
+Attach Metadata
+    ↓
+Prepare for Chunking
