@@ -201,3 +201,19 @@ Current response fields:
 - output_path
 - document
 - error
+
+## Decision 15: Store Raw Files Under Document ID Directories
+
+Uploaded raw files will be stored using document-specific directories.
+
+Current structure:
+uploads/{document_id}/original.pdf
+
+Reason:
+
+* Avoids filename collisions
+* Preserves raw source files for future reprocessing
+* Keeps all document artifacts grouped together
+* Prepares for future derived files such as parsed JSON, chunks, OCR outputs, and embeddings
+
+We create document_id before parsing so the same ID can be reused across raw storage, parsed output, chunks, vectors, and citations.

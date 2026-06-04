@@ -1,20 +1,19 @@
 import pymupdf # type: ignore
 from pathlib import Path
-from uuid import uuid4
 
 from app.ingestion.cleaner import clean_text, is_useful_text
 from app.ingestion.schemas import IngestedDocument, PageText, DocumentMetadata
 
 
-def load_pdf(file_path: str, filename: str) -> IngestedDocument:
+def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocument:
     """
     Extracts page-wise text from a PDF using PyMuPDF.
 
-    Metadata is attached during ingestion because downstream RAG depends on:
-    - citations
-    - filtering
-    - source trust separation
-    - debugging
+    The document_id is created outside this function so it can be shared across:
+    - raw file storage
+    - parsed JSON export
+    - database records
+    - future chunks and embeddings
     """
 
     pdf_path = Path(file_path)
@@ -45,7 +44,7 @@ def load_pdf(file_path: str, filename: str) -> IngestedDocument:
         )
 
     metadata = DocumentMetadata(
-        document_id=str(uuid4()),
+        document_id=document_id,
         filename=filename,
         source_type="scientific_paper",
         trust_level="verified",

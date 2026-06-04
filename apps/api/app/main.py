@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+from uuid import uuid4
 
 from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
 
@@ -30,13 +31,22 @@ def ingest_pdf(file: UploadFile = File(...)):
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported currently.")
 
-    file_path = UPLOAD_DIR / file.filename
+    document_id = str(uuid4())
+    document_dir = UPLOAD_DIR / document_id
+    document_dir.mkdir(parents=True, exist_ok=True)
+
+    raw_file_path = document_dir / "original.pdf"
 
     try:
-        with file_path.open("wb") as buffer:
+        with raw_file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        ingested_document = load_pdf(str(file_path), file.filename)
+        ingested_document = load_pdf(
+            file_path=str(raw_file_path),
+            filename=file.filename,
+            document_id=document_id
+        )
+
         output_path = export_ingested_document(ingested_document)
 
         return IngestionResponse(
