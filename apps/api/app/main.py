@@ -1,9 +1,10 @@
 import shutil
 from pathlib import Path
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
 
-from app.ingestion.pdf_loader import load_pdf
+from .ingestion.pdf_loader import load_pdf
+from .ingestion.exporter import export_ingested_document
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -35,6 +36,13 @@ def ingest_pdf(file: UploadFile = File(...)):
 
     try:
         ingested_document = load_pdf(str(file_path), file.filename)
-        return ingested_document
+        output_path = export_ingested_document(ingested_document)
+
+        return {
+            "message": "PDF ingested successfully",
+            "output_path": output_path,
+            "document": ingested_document
+        }
+
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error))

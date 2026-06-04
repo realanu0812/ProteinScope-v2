@@ -1,9 +1,9 @@
-import pymupdf
+import pymupdf # type: ignore
 from pathlib import Path
 from uuid import uuid4
 
-from app.ingestion.cleaner import clean_text
-from app.ingestion.schemas import IngestedDocument, PageText
+from .cleaner import clean_text
+from .schemas import IngestedDocument, PageText
 
 
 def load_pdf(file_path: str, filename: str) -> IngestedDocument:
