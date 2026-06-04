@@ -7,6 +7,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
 from app.ingestion.pdf_loader import load_pdf
 from app.ingestion.exporter import export_ingested_document
 from app.ingestion.schemas import IngestionResponse
+from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -28,24 +29,32 @@ def health_check():
 
 @app.post("/ingest/pdf", response_model=IngestionResponse)
 def ingest_pdf(file: UploadFile = File(...)):
-    if not file.filename or not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are supported currently.")
-
-    document_id = str(uuid4())
-    document_dir = UPLOAD_DIR / document_id
-    document_dir.mkdir(parents=True, exist_ok=True)
-
-    raw_file_path = document_dir / "original.pdf"
-
     try:
+        validate_pdf_filename(file.filename)
+
+        document_id = str(uuid4())
+        document_dir = UPLOAD_DIR / document_id
+        document_dir.mkdir(parents=True, exist_ok=True)
+
+        raw_file_path = document_dir / "original.pdf"
+
         with raw_file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
+
+        validate_uploaded_pdf(raw_file_path, file.filename)
 
         ingested_document = load_pdf(
             file_path=str(raw_file_path),
             filename=file.filename,
             document_id=document_id
         )
+
+        if ingested_document.page_count == 0:
+            return IngestionResponse(
+                status="failed",
+                message="PDF ingestion failed",
+                error="No useful text was extracted. This may be a scanned PDF and may require OCR."
+            )
 
         output_path = export_ingested_document(ingested_document)
 
@@ -55,6 +64,9 @@ def ingest_pdf(file: UploadFile = File(...)):
             output_path=output_path,
             document=ingested_document
         )
+
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
 
     except Exception as error:
         return IngestionResponse(

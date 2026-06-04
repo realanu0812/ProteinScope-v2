@@ -217,3 +217,25 @@ Reason:
 * Prepares for future derived files such as parsed JSON, chunks, OCR outputs, and embeddings
 
 We create document_id before parsing so the same ID can be reused across raw storage, parsed output, chunks, vectors, and citations.
+
+## Decision 16: Validate Uploaded PDFs Before Parsing
+
+We will validate uploaded PDFs before running the parser.
+
+Current validations:
+- filename must exist
+- extension must be .pdf
+- file must not be empty
+- file must be under 25 MB
+- file must be openable by PyMuPDF
+- file must contain at least one useful extracted text page
+
+Reason:
+- Prevents corrupted files from reaching parser logic
+- Makes API errors clearer
+- Protects backend from very large uploads during early development
+- Helps detect scanned PDFs that require OCR
+
+Current limitation:
+- File extension validation is not enough for production security.
+- Later we may add MIME type detection and stricter content validation.
