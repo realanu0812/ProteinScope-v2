@@ -21,3 +21,33 @@ ProteinScope v2 uses a source-separated RAG architecture.
 4. Generation Layer
    - Citation-backed answers
    - Evidence vs experience separation
+
+## High-Level System Flow
+
+User
+ ↓
+Next.js Frontend
+ ↓
+FastAPI Backend
+ ↓
+PostgreSQL
+ ↓
+Qdrant Vector Database
+ ↓
+LLM Provider
+
+## Source-Separated RAG Flow
+
+User Question
+    ↓
+Query Router
+    ↓
+Scientific Evidence Retriever
+    ↓
+Community Experience Retriever
+    ↓
+Reranker
+    ↓
+Answer Generator
+    ↓
+Evidence vs Experience Response
