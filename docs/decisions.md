@@ -110,3 +110,48 @@ Reason:
 - Helps retrieval routing
 - Prevents anecdotal data from being treated as verified evidence
 - Supports safer answer generation
+
+## Decision 10: Export Ingestion Output as JSON
+
+We will export ingested document output as JSON during early development.
+
+Reason:
+- Helps inspect PDF parsing quality
+- Makes debugging easier before chunking/embedding
+- Prevents embedding dirty or broken extracted text
+- Allows us to compare parser outputs over time
+
+This export is for development and debugging. In production, parsed outputs will be stored in the database/object storage.
+
+## Decision 11: Use Conservative Text Cleaning
+
+We will use conservative cleaning for scientific PDFs.
+
+Reason:
+- Scientific documents contain important symbols and tokens such as TP53, IL-6, TNF-α, p-value < 0.05, mTORC1
+- Aggressive regex cleaning can destroy useful biomedical information
+- The goal is to remove obvious noise without harming scientific meaning
+
+We currently clean:
+- null characters
+- excessive whitespace
+- repeated blank lines
+- standalone page numbers
+
+We intentionally do not remove:
+- numbers
+- Greek symbols
+- hyphens
+- punctuation
+- scientific notation
+
+## Decision 12: Skip Pages With Very Low Useful Text
+
+We will skip pages where extracted text is too short or mostly non-alphabetic.
+
+Reason:
+- Helps remove blank pages
+- Detects scanned pages where PyMuPDF extracted no useful text
+- Avoids storing pages that only contain headers, footers, or page numbers
+
+This is a temporary baseline. Later, scanned pages will be routed to OCR instead of simply being skipped.

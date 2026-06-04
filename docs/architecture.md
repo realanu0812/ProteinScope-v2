@@ -67,3 +67,20 @@ Clean
 Attach Metadata
     ↓
 Prepare for Chunking
+
+## Current Ingestion Implementation
+
+The current ingestion pipeline supports baseline scientific PDF ingestion.
+
+```text
+PDF Upload
+    ↓
+Save Raw File
+    ↓
+Extract Page-wise Text using PyMuPDF
+    ↓
+Conservative Text Cleaning
+    ↓
+Skip Low-Text Pages
+    ↓
+Export Structured JSON for Inspection

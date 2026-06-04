@@ -2,8 +2,8 @@ import pymupdf # type: ignore
 from pathlib import Path
 from uuid import uuid4
 
-from .cleaner import clean_text
-from .schemas import IngestedDocument, PageText
+from app.ingestion.cleaner import clean_text, is_useful_text
+from app.ingestion.schemas import IngestedDocument, PageText
 
 
 def load_pdf(file_path: str, filename: str) -> IngestedDocument:
@@ -28,6 +28,9 @@ def load_pdf(file_path: str, filename: str) -> IngestedDocument:
     for page_index, page in enumerate(document):
         raw_text = page.get_text("text")
         cleaned_text = clean_text(raw_text)
+
+        if not is_useful_text(cleaned_text):
+            continue
 
         pages.append(
             PageText(
