@@ -112,3 +112,22 @@ Current document metadata:
   "ingestion_status": "completed",
   "created_at": "..."
 }
+
+## Ingestion Status Handling
+
+The ingestion API now returns structured status responses.
+
+Current statuses:
+
+- completed
+- failed
+
+Future statuses:
+
+- uploaded
+- queued
+- processing
+- completed
+- failed
+
+This prepares the system for background ingestion jobs when documents become large or when OCR/embedding steps are added.

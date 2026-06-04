@@ -184,3 +184,20 @@ Each page currently stores:
 - text
 - char_count
 - is_empty
+
+## Decision 14: Use Explicit Ingestion Response Status
+
+We will return structured ingestion responses with status values such as completed and failed.
+
+Reason:
+- Makes API behavior predictable
+- Prepares the system for future async/background ingestion
+- Improves frontend UX
+- Helps debugging failed parsing jobs
+
+Current response fields:
+- status
+- message
+- output_path
+- document
+- error
