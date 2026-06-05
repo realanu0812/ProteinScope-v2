@@ -8,8 +8,15 @@ class PageText(BaseModel):
     page_number: int
     text: str
     char_count: int
-    section: Optional[str] = None
     is_empty: bool = False
+
+
+class SectionBlock(BaseModel):
+    section: Optional[str]
+    text: str
+    start_page: int
+    end_page: int
+    char_count: int
 
 
 class IngestionMetrics(BaseModel):
@@ -18,6 +25,7 @@ class IngestionMetrics(BaseModel):
     skipped_pages: int
     total_characters: int
     average_characters_per_page: float
+    section_blocks_count: int
 
 
 class DocumentMetadata(BaseModel):
@@ -46,6 +54,7 @@ class IngestedDocument(BaseModel):
     page_count: int
     metrics: IngestionMetrics
     pages: List[PageText]
+    section_blocks: List[SectionBlock]
 
 
 class IngestionResponse(BaseModel):

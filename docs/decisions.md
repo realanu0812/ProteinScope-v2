@@ -320,3 +320,21 @@ Reason:
 New structure:
 - pages: raw page-wise extraction
 - section_blocks: continuous text grouped by detected section
+
+## Decision 21: Implement Section Blocks for Scientific Papers
+
+We implemented section_blocks in addition to page-wise extraction.
+
+Reason:
+- Multiple sections can appear on the same page
+- Page-level section labels are too coarse
+- Section blocks are better suited for future chunking and retrieval
+- Pages are still preserved for inspection and citation support
+
+Current structure:
+- pages: raw page-wise text
+- section_blocks: continuous section-aware text spans
+
+Current limitation:
+- Section block extraction is still rule-based
+- Complex layouts may require Docling/layout-aware parsing later

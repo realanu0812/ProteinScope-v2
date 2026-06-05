@@ -253,3 +253,6 @@ Example:
   "text": "..."
 }
 This gives us better structure than assigning one section label to an entire page.
+Pages remain useful for debugging and citations, while section_blocks will become the primary input for chunking.
+
+

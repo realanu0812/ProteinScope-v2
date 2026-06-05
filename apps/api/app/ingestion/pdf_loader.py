@@ -1,10 +1,9 @@
-import fitz
+import pymupdf
 from pathlib import Path
-from typing import Optional
 
-from app.ingestion.cleaner import clean_text, is_useful_text
-from app.ingestion.section_detector import detect_section_from_text
-from app.ingestion.schemas import (
+from .cleaner import clean_text, is_useful_text
+from .section_detector import build_section_blocks
+from .schemas import (
     IngestedDocument,
     PageText,
     DocumentMetadata,
@@ -16,7 +15,9 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
     """
     Extracts page-wise text from a PDF using PyMuPDF.
 
-    We also attach basic section labels to pages when possible.
+    We keep:
+    - pages: raw page-wise text for inspection/citations
+    - section_blocks: section-aware text for chunking/retrieval
     """
 
     pdf_path = Path(file_path)
@@ -24,13 +25,11 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
     if not pdf_path.exists():
         raise FileNotFoundError(f"PDF file not found: {file_path}")
 
-    document = fitz.open(file_path)
+    document = pymupdf.open(file_path)
     raw_metadata = document.metadata or {}
 
     total_pages_in_pdf = len(document)
     pages = []
-
-    current_section: Optional[str] = None
 
     for page_index, page in enumerate(document):
         raw_text = page.get_text("text")
@@ -40,20 +39,16 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
         if not useful:
             continue
 
-        detected_section = detect_section_from_text(cleaned_text)
-
-        if detected_section:
-            current_section = detected_section
-
         pages.append(
             PageText(
                 page_number=page_index + 1,
                 text=cleaned_text,
                 char_count=len(cleaned_text),
-                section=current_section,
                 is_empty=False
             )
         )
+
+    section_blocks = build_section_blocks(pages)
 
     total_characters = sum(page.char_count for page in pages)
     extracted_pages = len(pages)
@@ -71,7 +66,7 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
         title=raw_metadata.get("title") or None,
         author=raw_metadata.get("author") or None,
         parser_name="pymupdf",
-        parser_version=fitz.version[0],
+        parser_version=pymupdf.version[0],
         ingestion_status="completed"
     )
 
@@ -81,11 +76,13 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
         skipped_pages=skipped_pages,
         total_characters=total_characters,
         average_characters_per_page=round(average_characters_per_page, 2),
+        section_blocks_count=len(section_blocks),
     )
 
     return IngestedDocument(
         metadata=metadata,
         page_count=extracted_pages,
         metrics=metrics,
-        pages=pages
+        pages=pages,
+        section_blocks=section_blocks,
     )

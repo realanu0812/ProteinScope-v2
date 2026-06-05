@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from app.ingestion.schemas import IngestedDocument
+from .schemas import IngestedDocument
 
 
 def export_ingested_document(document: IngestedDocument, output_dir: str = "outputs/ingestion") -> str:

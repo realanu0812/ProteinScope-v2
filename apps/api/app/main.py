@@ -4,10 +4,10 @@ from uuid import uuid4
 
 from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
 
-from app.ingestion.pdf_loader import load_pdf
-from app.ingestion.exporter import export_ingested_document
-from app.ingestion.schemas import IngestionResponse
-from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
+from .ingestion.pdf_loader import load_pdf
+from .ingestion.exporter import export_ingested_document
+from .ingestion.schemas import IngestionResponse
+from .ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
 
 app = FastAPI(
     title="ProteinScope v2 API",
