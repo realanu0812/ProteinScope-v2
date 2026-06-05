@@ -11,6 +11,14 @@ class PageText(BaseModel):
     is_empty: bool = False
 
 
+class IngestionMetrics(BaseModel):
+    total_pages_in_pdf: int
+    extracted_pages: int
+    skipped_pages: int
+    total_characters: int
+    average_characters_per_page: float
+
+
 class DocumentMetadata(BaseModel):
     document_id: str
     filename: str
@@ -35,6 +43,7 @@ class DocumentMetadata(BaseModel):
 class IngestedDocument(BaseModel):
     metadata: DocumentMetadata
     page_count: int
+    metrics: IngestionMetrics
     pages: List[PageText]
 
 

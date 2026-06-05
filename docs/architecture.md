@@ -175,3 +175,17 @@ Parse text
     ↓
 Ensure useful text exists
 If no useful text is extracted, the document is treated as a failed ingestion candidate for future OCR support.
+
+## Ingestion Metrics
+
+Each PDF ingestion now computes summary metrics.
+
+Example:
+{
+  "total_pages_in_pdf": 12,
+  "extracted_pages": 10,
+  "skipped_pages": 2,
+  "total_characters": 28000,
+  "average_characters_per_page": 2800.0
+}
+These metrics help identify extraction quality issues before chunking and embedding.

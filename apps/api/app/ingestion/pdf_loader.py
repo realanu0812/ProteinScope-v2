@@ -1,19 +1,20 @@
-import pymupdf # type: ignore
+import fitz
 from pathlib import Path
 
 from app.ingestion.cleaner import clean_text, is_useful_text
-from app.ingestion.schemas import IngestedDocument, PageText, DocumentMetadata
+from app.ingestion.schemas import (
+    IngestedDocument,
+    PageText,
+    DocumentMetadata,
+    IngestionMetrics,
+)
 
 
 def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocument:
     """
     Extracts page-wise text from a PDF using PyMuPDF.
 
-    The document_id is created outside this function so it can be shared across:
-    - raw file storage
-    - parsed JSON export
-    - database records
-    - future chunks and embeddings
+    We compute ingestion metrics to quickly inspect extraction quality.
     """
 
     pdf_path = Path(file_path)
@@ -21,9 +22,10 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
     if not pdf_path.exists():
         raise FileNotFoundError(f"PDF file not found: {file_path}")
 
-    document = pymupdf.open(file_path)
+    document = fitz.open(file_path)
     raw_metadata = document.metadata or {}
 
+    total_pages_in_pdf = len(document)
     pages = []
 
     for page_index, page in enumerate(document):
@@ -43,6 +45,14 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
             )
         )
 
+    total_characters = sum(page.char_count for page in pages)
+    extracted_pages = len(pages)
+    skipped_pages = total_pages_in_pdf - extracted_pages
+
+    average_characters_per_page = (
+        total_characters / extracted_pages if extracted_pages > 0 else 0
+    )
+
     metadata = DocumentMetadata(
         document_id=document_id,
         filename=filename,
@@ -51,12 +61,21 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
         title=raw_metadata.get("title") or None,
         author=raw_metadata.get("author") or None,
         parser_name="pymupdf",
-        parser_version=pymupdf.version[0],
+        parser_version=fitz.version[0],
         ingestion_status="completed"
+    )
+
+    metrics = IngestionMetrics(
+        total_pages_in_pdf=total_pages_in_pdf,
+        extracted_pages=extracted_pages,
+        skipped_pages=skipped_pages,
+        total_characters=total_characters,
+        average_characters_per_page=round(average_characters_per_page, 2),
     )
 
     return IngestedDocument(
         metadata=metadata,
-        page_count=len(pages),
+        page_count=extracted_pages,
+        metrics=metrics,
         pages=pages
     )

@@ -239,3 +239,20 @@ Reason:
 Current limitation:
 - File extension validation is not enough for production security.
 - Later we may add MIME type detection and stricter content validation.
+
+## Decision 17: Track Ingestion Summary Metrics
+
+We will compute summary metrics for every ingested PDF.
+
+Current metrics:
+- total_pages_in_pdf
+- extracted_pages
+- skipped_pages
+- total_characters
+- average_characters_per_page
+
+Reason:
+- Helps quickly inspect extraction quality
+- Detects suspicious parser output
+- Helps identify scanned PDFs or low-quality extraction
+- Provides useful debugging signals before chunking and embedding
