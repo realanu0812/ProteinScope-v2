@@ -255,4 +255,21 @@ Example:
 This gives us better structure than assigning one section label to an entire page.
 Pages remain useful for debugging and citations, while section_blocks will become the primary input for chunking.
 
+## Ingestion Debug Report
 
+Each successful ingestion exports:
+
+outputs/ingestion/{document_id}.json
+outputs/ingestion/{document_id}_report.md
+
+The Markdown report summarizes:
+
+* document metadata
+* extraction metrics
+* section blocks
+* page ranges
+* character counts
+* text previews
+
+This helps validate parser quality before chunking and embedding.
+EOF

@@ -338,3 +338,18 @@ Current structure:
 Current limitation:
 - Section block extraction is still rule-based
 - Complex layouts may require Docling/layout-aware parsing later
+
+## Decision 22: Generate Markdown Ingestion Debug Reports
+
+We will generate a Markdown report for every successful PDF ingestion during development.
+
+Reason:
+- Large JSON outputs are difficult to inspect manually
+- Reports make parser quality easier to review
+- Reports show section blocks, page ranges, and character counts clearly
+- Helps catch ingestion issues before chunking and embedding
+
+Current report path:
+
+outputs/ingestion/{document_id}_report.md
+In production, this may become an internal admin/debug view instead of a local Markdown file.

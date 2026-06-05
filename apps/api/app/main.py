@@ -4,10 +4,11 @@ from uuid import uuid4
 
 from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
 
-from .ingestion.pdf_loader import load_pdf
-from .ingestion.exporter import export_ingested_document
-from .ingestion.schemas import IngestionResponse
-from .ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
+from app.ingestion.pdf_loader import load_pdf
+from app.ingestion.exporter import export_ingested_document
+from app.ingestion.reporter import export_ingestion_report
+from app.ingestion.schemas import IngestionResponse
+from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -57,11 +58,13 @@ def ingest_pdf(file: UploadFile = File(...)):
             )
 
         output_path = export_ingested_document(ingested_document)
+        report_path = export_ingestion_report(ingested_document)
 
         return IngestionResponse(
             status="completed",
             message="PDF ingested successfully",
             output_path=output_path,
+            report_path=report_path,
             document=ingested_document
         )
 
