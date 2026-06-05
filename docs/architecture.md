@@ -211,3 +211,45 @@ Example page metadata:
   "char_count": 3120
 }
 This enables future section-aware chunking and retrieval.
+
+## Improved Section Detection
+
+Section detection now supports:
+
+- clean headings
+- numbered headings
+- subsection-style headings
+- common aliases
+- combined Results and Discussion sections
+
+Examples:
+
+1 Introduction              → introduction
+2.1 Materials and Methods   → methods
+3 Results and Discussion    → results_discussion
+
+This is still a rule-based baseline and will later be compared against layout-aware parsing.
+
+## Section Block Extraction
+
+Page-level section labels are not enough because multiple sections can appear on one page.
+
+ProteinScope will keep both:
+
+pages[]          → raw page-wise extracted text for inspection/citations
+section_blocks[] → section-aware text blocks for chunking/retrieval
+Example:
+{
+  "section": "abstract",
+  "start_page": 1,
+  "end_page": 1,
+  "text": "..."
+}
+
+{
+  "section": "introduction",
+  "start_page": 1,
+  "end_page": 2,
+  "text": "..."
+}
+This gives us better structure than assigning one section label to an entire page.

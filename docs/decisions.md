@@ -279,3 +279,44 @@ Reason:
 Current limitation:
 - Detection is rule-based and may miss numbered or layout-heavy headings.
 - Later, Docling/layout-aware parsing can improve section extraction.
+
+## Decision 19: Improve Section Detection for Numbered Scientific Headings
+
+We will support common numbered scientific section headings.
+
+Examples:
+- 1 Introduction
+- 1. Introduction
+- 2.1 Materials and Methods
+- 3 Results and Discussion
+
+Reason:
+- Scientific papers frequently use numbered sections
+- Section metadata improves chunking and retrieval
+- More accurate section detection helps answer method/result/conclusion-specific questions
+
+Current limitation:
+- This remains rule-based
+- It may still fail on complex layouts, multi-column PDFs, or visually styled headings
+- Later layout-aware parsing can improve this
+
+## Decision 20: Move From Page-Level Section Labels to Section Blocks
+
+Page-level section detection is not sufficient for scientific papers because multiple sections can start on the same page.
+
+Example:
+- Abstract and Introduction may both appear on page 1
+- Results and Discussion may appear on the same page
+- Conclusion may start halfway through a page
+
+We will keep page-level extracted text for inspection and citations, but introduce section_blocks for section-aware chunking and retrieval.
+
+Reason:
+- Avoids assigning an entire page to the wrong section
+- Preserves scientific document structure more accurately
+- Improves future chunking quality
+- Supports section-specific retrieval
+
+New structure:
+- pages: raw page-wise extraction
+- section_blocks: continuous text grouped by detected section
