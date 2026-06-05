@@ -256,3 +256,26 @@ Reason:
 - Detects suspicious parser output
 - Helps identify scanned PDFs or low-quality extraction
 - Provides useful debugging signals before chunking and embedding
+
+## Decision 18: Add Baseline Scientific Section Detection
+
+We will add simple rule-based section detection during PDF ingestion.
+
+Current detected sections:
+- abstract
+- introduction/background
+- methods/materials and methods/methodology
+- results/findings
+- discussion
+- conclusion
+- references
+
+Reason:
+- Scientific papers have meaningful structure
+- Section metadata improves future chunking and retrieval
+- Users may ask section-specific questions such as study methods or findings
+- This prepares the system for section-aware retrieval
+
+Current limitation:
+- Detection is rule-based and may miss numbered or layout-heavy headings.
+- Later, Docling/layout-aware parsing can improve section extraction.

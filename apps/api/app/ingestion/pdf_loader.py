@@ -1,7 +1,9 @@
 import fitz
 from pathlib import Path
+from typing import Optional
 
 from app.ingestion.cleaner import clean_text, is_useful_text
+from app.ingestion.section_detector import detect_section_from_text
 from app.ingestion.schemas import (
     IngestedDocument,
     PageText,
@@ -14,7 +16,7 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
     """
     Extracts page-wise text from a PDF using PyMuPDF.
 
-    We compute ingestion metrics to quickly inspect extraction quality.
+    We also attach basic section labels to pages when possible.
     """
 
     pdf_path = Path(file_path)
@@ -28,6 +30,8 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
     total_pages_in_pdf = len(document)
     pages = []
 
+    current_section: Optional[str] = None
+
     for page_index, page in enumerate(document):
         raw_text = page.get_text("text")
         cleaned_text = clean_text(raw_text)
@@ -36,11 +40,17 @@ def load_pdf(file_path: str, filename: str, document_id: str) -> IngestedDocumen
         if not useful:
             continue
 
+        detected_section = detect_section_from_text(cleaned_text)
+
+        if detected_section:
+            current_section = detected_section
+
         pages.append(
             PageText(
                 page_number=page_index + 1,
                 text=cleaned_text,
                 char_count=len(cleaned_text),
+                section=current_section,
                 is_empty=False
             )
         )

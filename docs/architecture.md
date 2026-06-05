@@ -189,3 +189,25 @@ Example:
   "average_characters_per_page": 2800.0
 }
 These metrics help identify extraction quality issues before chunking and embedding.
+
+## Section Detection
+
+ProteinScope now performs baseline section detection during ingestion.
+
+Current approach:
+
+Page Text
+    ↓
+Check first lines for known scientific headings
+    ↓
+Assign detected section
+    ↓
+Carry section forward until a new section is detected
+
+Example page metadata:
+{
+  "page_number": 4,
+  "section": "methods",
+  "char_count": 3120
+}
+This enables future section-aware chunking and retrieval.

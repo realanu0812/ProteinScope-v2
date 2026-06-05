@@ -8,6 +8,7 @@ class PageText(BaseModel):
     page_number: int
     text: str
     char_count: int
+    section: Optional[str] = None
     is_empty: bool = False
 
 
