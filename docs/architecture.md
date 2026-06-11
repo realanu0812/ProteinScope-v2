@@ -302,3 +302,21 @@ Each chunk contains:
   "char_count": 800
 }
 This is the first retrieval-ready data unit.
+
+## Recursive Chunking
+
+ProteinScope now uses recursive chunking for scientific section blocks.
+
+Flow:
+
+```text
+section_block
+    ↓
+paragraph split
+    ↓
+sentence split if paragraph too large
+    ↓
+character split only as fallback
+    ↓
+overlap added between chunks
+This improves chunk quality compared to fixed character splitting.

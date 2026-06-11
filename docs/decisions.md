@@ -374,3 +374,25 @@ Current limitation:
 - character-based chunking is not token-aware
 - chunks may split mid-sentence
 - later we will improve this with recursive paragraph/sentence splitting
+
+## Decision 24: Upgrade to Recursive Chunking
+
+We upgraded from simple character-based chunking to recursive chunking.
+
+Current splitting priority:
+1. Preserve section blocks
+2. Preserve paragraphs
+3. Split large paragraphs into sentences
+4. Split oversized sentences by characters only as fallback
+5. Add overlap between neighboring chunks
+
+Reason:
+- Reduces mid-sentence splitting
+- Preserves more semantic meaning
+- Produces better retrieval units
+- Still remains simple and debuggable
+
+Current limitation:
+- Sentence splitting is regex-based
+- Scientific abbreviations may still cause imperfect splits
+- Later we may use token-aware or NLP-based splitting
