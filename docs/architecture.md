@@ -320,3 +320,20 @@ character split only as fallback
     ↓
 overlap added between chunks
 This improves chunk quality compared to fixed character splitting.
+
+## Chunk Debug Report
+
+Each successful chunking run exports:
+
+```text
+outputs/chunks/{document_id}_chunks.json
+outputs/chunks/{document_id}_chunks_report.md
+The chunk report summarizes:
+
+* total chunks
+* average/min/max chunk size
+* chunk counts by section
+* page ranges
+* chunk previews
+
+This helps validate chunk quality before embeddings are generated.

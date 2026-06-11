@@ -396,3 +396,16 @@ Current limitation:
 - Sentence splitting is regex-based
 - Scientific abbreviations may still cause imperfect splits
 - Later we may use token-aware or NLP-based splitting
+
+## Decision 25: Generate Chunk Debug Reports
+
+We will generate a Markdown report after chunking.
+
+Reason:
+- Chunk JSON is difficult to manually inspect
+- Chunk quality must be checked before embeddings
+- Report helps identify bad chunk sizes, missing sections, and broken text
+- Supports faster iteration on chunking strategy
+
+Current report path:
+outputs/chunks/{document_id}_chunks_report.md

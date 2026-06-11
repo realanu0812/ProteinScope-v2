@@ -12,6 +12,7 @@ from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
 
 from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
+from app.chunking.reporter import export_chunk_report
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -68,6 +69,10 @@ def ingest_pdf(file: UploadFile = File(...)):
             document_id=ingested_document.metadata.document_id,
             chunks=chunks
         )
+        chunks_report_path = export_chunk_report(
+            document_id=ingested_document.metadata.document_id,
+            chunks=chunks
+        )
 
         return IngestionResponse(
             status="completed",
@@ -75,6 +80,7 @@ def ingest_pdf(file: UploadFile = File(...)):
             output_path=output_path,
             report_path=report_path,
             chunks_path=chunks_path,
+            chunks_report_path=chunks_report_path,
             chunk_count=len(chunks),
             document=ingested_document
         )

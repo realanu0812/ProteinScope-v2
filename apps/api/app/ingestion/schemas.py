@@ -55,6 +55,7 @@ class IngestionResponse(BaseModel):
     output_path: Optional[str] = None
     report_path: Optional[str] = None
     chunks_path: Optional[str] = None
+    chunks_report_path: Optional[str] = None
     chunk_count: Optional[int] = None
     document: Optional[IngestedDocument] = None
     error: Optional[str] = None
