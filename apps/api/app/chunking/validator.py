@@ -42,5 +42,9 @@ def validate_chunks(chunks: List[TextChunk]) -> Dict:
         "missing_section_chunks": missing_section_chunks,
         "empty_chunks": empty_chunks,
         "suspicious_start_chunks": suspicious_start_chunks,
-        "passed": len(empty_chunks) == 0
+        "passed": (
+                    len(empty_chunks) == 0
+                    and len(large_chunks) == 0
+                    and len(small_chunks) == 0
+                    )
     }

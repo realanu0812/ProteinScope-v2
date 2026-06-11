@@ -456,3 +456,22 @@ Reason:
 - Chunk issues are easier to fix before vector indexing
 - Validation catches extremely small, oversized, or poorly structured chunks
 - This creates a quality gate before retrieval
+
+## Decision 29: Cap Sentence-Level Overlap to Avoid Oversized Chunks
+
+After inspecting the chunk report, we found oversized chunks even after switching to sentence-level overlap.
+
+Cause:
+- Some scientific PDFs contain tables, code blocks, or figure text that the regex sentence splitter treats as one very long sentence.
+- When that long sentence is reused as overlap, the next chunk can become much larger than the target size.
+
+Decision:
+- Keep sentence-level overlap only when overlap text is at most 250 characters.
+- Skip overlap when the previous sentence-like unit is too large.
+- Make validation fail when chunks are too small or too large.
+
+Reason:
+- Prevents oversized chunks
+- Keeps chunks readable
+- Avoids mid-word overlap
+- Improves quality before embeddings

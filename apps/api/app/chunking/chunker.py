@@ -8,6 +8,7 @@ from app.chunking.schemas import TextChunk
 
 TARGET_CHUNK_SIZE = 900
 CHUNK_OVERLAP_SENTENCES = 1
+MAX_OVERLAP_CHARS = 250
 
 
 def split_into_paragraphs(text: str) -> List[str]:
@@ -122,7 +123,7 @@ def recursive_split_text(text: str, target_size: int = TARGET_CHUNK_SIZE) -> Lis
         overlap_sentences = previous_sentences[-CHUNK_OVERLAP_SENTENCES:]
         overlap_text = " ".join(overlap_sentences).strip()
 
-        if overlap_text:
+        if overlap_text and len(overlap_text) <= MAX_OVERLAP_CHARS:
             chunks_with_overlap.append(f"{overlap_text} {chunk}".strip())
         else:
             chunks_with_overlap.append(chunk)

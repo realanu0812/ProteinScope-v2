@@ -363,3 +363,16 @@ Before embeddings, chunks will be checked for:
 - empty text
 
 This acts as a quality gate before vector indexing.
+
+## Chunk Overlap Cap
+
+ProteinScope uses sentence-level overlap, but overlap is capped at 250 characters.
+
+Current rule:
+
+```text
+if previous_sentence_overlap <= 250 chars:
+    prepend overlap
+else:
+    skip overlap
+Chunk validation now fails when chunks are empty, too small, or too large.
