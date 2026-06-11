@@ -57,5 +57,10 @@ class IngestionResponse(BaseModel):
     chunks_path: Optional[str] = None
     chunks_report_path: Optional[str] = None
     chunk_count: Optional[int] = None
+    embeddings_path: Optional[str] = None
+    embedding_count: Optional[int] = None
+    embedding_model: Optional[str] = None
+    embeddings_report_path: Optional[str] = None
+    indexed_count: Optional[int] = None
     document: Optional[IngestedDocument] = None
     error: Optional[str] = None

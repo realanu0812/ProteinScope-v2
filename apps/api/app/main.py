@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
 
 from app.ingestion.pdf_loader import load_pdf
 from app.ingestion.exporter import export_ingested_document
@@ -13,6 +13,12 @@ from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
 from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
 from app.chunking.reporter import export_chunk_report
+
+from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embeddings
+from app.embeddings.sentence_transformer_provider import SentenceTransformerEmbeddingProvider
+from app.embeddings.reporter import export_embedding_report
+
+from app.vector_store.qdrant_store import QdrantVectorStore
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -74,14 +80,35 @@ def ingest_pdf(file: UploadFile = File(...)):
             chunks=chunks
         )
 
+        embedding_provider = SentenceTransformerEmbeddingProvider()
+        embedded_chunks = create_chunk_embeddings(
+            chunks=chunks,
+            provider=embedding_provider
+        )
+        embeddings_path = export_chunk_embeddings(
+            document_id=ingested_document.metadata.document_id,
+            embeddings=embedded_chunks
+        )
+        embeddings_report_path = export_embedding_report(
+            document_id=ingested_document.metadata.document_id,
+            embeddings=embedded_chunks
+        )
+        vector_store = QdrantVectorStore()
+        indexed_count = vector_store.upsert_embeddings(embedded_chunks)
+
         return IngestionResponse(
             status="completed",
-            message="PDF ingested and chunked successfully",
+            message="PDF ingested, chunked, and embedded successfully",
             output_path=output_path,
             report_path=report_path,
             chunks_path=chunks_path,
             chunks_report_path=chunks_report_path,
             chunk_count=len(chunks),
+            embeddings_path=embeddings_path,
+            embedding_count=len(embedded_chunks),
+            embedding_model=embedding_provider.model_name(),
+            embeddings_report_path=embeddings_report_path,
+            indexed_count=indexed_count,
             document=ingested_document
         )
 

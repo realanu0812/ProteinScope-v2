@@ -25,3 +25,6 @@ data/
 
 apps/api/outputs/chunks/
 
+
+# Generated embeddings
+apps/api/outputs/embeddings/

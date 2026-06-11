@@ -272,13 +272,11 @@ The Markdown report summarizes:
 * text previews
 
 This helps validate parser quality before chunking and embedding.
-EOF
 
 ## Baseline Chunking Flow
 
 Current flow:
 
-```text
 section_blocks
     ↓
 character-based splitter
@@ -309,7 +307,6 @@ ProteinScope now uses recursive chunking for scientific section blocks.
 
 Flow:
 
-```text
 section_block
     ↓
 paragraph split
@@ -325,7 +322,6 @@ This improves chunk quality compared to fixed character splitting.
 
 Each successful chunking run exports:
 
-```text
 outputs/chunks/{document_id}_chunks.json
 outputs/chunks/{document_id}_chunks_report.md
 The chunk report summarizes:
@@ -370,7 +366,6 @@ ProteinScope uses sentence-level overlap, but overlap is capped at 250 character
 
 Current rule:
 
-```text
 if previous_sentence_overlap <= 250 chars:
     prepend overlap
 else:
@@ -383,7 +378,6 @@ ProteinScope will use an abstract embedding provider.
 
 Initial provider:
 
-```text
 sentence-transformers/all-MiniLM-L6-v2
 Planned structure:
 apps/api/app/embeddings/
@@ -393,3 +387,71 @@ apps/api/app/embeddings/
 Design principle:
 
 The rest of the system should not depend directly on one embedding model or vendor.
+
+## Current Embedding Flow
+
+Current flow:
+
+chunks
+    ↓
+SentenceTransformerEmbeddingProvider
+    ↓
+normalized embeddings
+    ↓
+embedding JSON export
+
+Each embedded chunk stores:
+
+* chunk_id
+* document_id
+* chunk_index
+* source_type
+* trust_level
+* section
+* page range
+* text
+* embedding_model
+* embedding vector
+
+Vector DB integration comes next.
+
+## Embedding Debug Report
+
+Each successful embedding run exports:
+
+outputs/embeddings/{document_id}_embeddings.json
+outputs/embeddings/{document_id}_embeddings_report.md
+The report summarizes:
+
+* embedding count
+* embedding model
+* vector dimension
+* chunk index mapping
+* section/page metadata
+
+This helps verify embedding quality before vector DB integration.
+
+## Qdrant Vector Store
+
+ProteinScope stores embedded chunks in Qdrant.
+
+Collection:
+
+proteinscope_chunks
+Current vector config:
+size = 384
+distance = cosine
+Each Qdrant point contains:
+
+* vector embedding
+* chunk_id
+* document_id
+* chunk_index
+* source_type
+* trust_level
+* section
+* page range
+* text
+* embedding_model
+
+This enables future dense retrieval and metadata filtering.

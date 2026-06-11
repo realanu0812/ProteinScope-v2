@@ -447,6 +447,7 @@ Current limitation:
 - sentence splitting is still regex-based
 - scientific abbreviations may still be imperfect
 - later we may use token-aware or NLP-based splitting
+
 ## Decision 28: Add Chunk Validation Before Embeddings
 
 We will validate chunks before generating embeddings.
@@ -493,3 +494,49 @@ Current limitation:
 - May be weaker than larger embedding models
 - CPU inference may be slower for large documents
 - Later we may add OpenAI, Gemini, BGE, or E5 through the same provider abstraction
+
+## Decision 31: Export Embeddings Locally Before Vector DB Integration
+
+We will export chunk embeddings to JSON before adding Qdrant.
+
+Reason:
+- Helps inspect embedding output shape
+- Keeps embeddings phase separate from vector database setup
+- Makes debugging easier
+- Allows us to verify chunk-to-vector mapping before indexing
+
+Current output:
+outputs/embeddings/{document_id}_embeddings.json
+
+## Decision 32: Generate Embedding Debug Reports
+
+We will generate a Markdown report after embedding generation.
+
+Reason:
+- Confirms embedding count matches chunk count
+- Confirms vector dimension
+- Confirms embedding model name
+- Helps inspect chunk-to-vector mapping before vector database indexing
+
+Current report path:
+outputs/embeddings/{document_id}_embeddings_report.md
+
+## Decision 33: Use Qdrant for Dense Vector Storage
+
+We will use Qdrant as the first vector database.
+
+Reason:
+- Supports vector similarity search
+- Supports metadata payloads
+- Supports filtering
+- Runs locally with Docker
+- Good fit for production-style RAG systems
+
+Initial collection:
+- name: proteinscope_chunks
+- vector size: 384
+- distance: cosine
+
+Current limitation:
+- Collection size is tied to all-MiniLM-L6-v2 embedding dimension.
+- If embedding model changes, vectors must be re-indexed or a new collection must be created.

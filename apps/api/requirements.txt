@@ -3,3 +3,6 @@ uvicorn[standard]
 pymupdf
 python-multipart
 pydantic
+sentence-transformers
+numpy
+qdrant-client
