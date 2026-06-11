@@ -353,3 +353,24 @@ Current report path:
 
 outputs/ingestion/{document_id}_report.md
 In production, this may become an internal admin/debug view instead of a local Markdown file.
+
+## Decision 23: Start With Section-Aware Character-Based Chunking
+
+We will start chunking from section_blocks, not raw pages.
+
+Current chunking strategy:
+- input: section_blocks
+- target size: 800 characters
+- overlap: 150 characters
+- metadata preserved on every chunk
+
+Reason:
+- section_blocks preserve scientific document structure
+- character-based splitting is simple and model-independent
+- overlap reduces boundary context loss
+- every chunk remains traceable to document, section, and page range
+
+Current limitation:
+- character-based chunking is not token-aware
+- chunks may split mid-sentence
+- later we will improve this with recursive paragraph/sentence splitting

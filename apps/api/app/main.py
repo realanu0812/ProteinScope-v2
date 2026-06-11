@@ -2,13 +2,16 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
+from fastapi import FastAPI, UploadFile, File, HTTPException
 
 from app.ingestion.pdf_loader import load_pdf
 from app.ingestion.exporter import export_ingested_document
 from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
 from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
+
+from app.chunking.chunker import chunk_document
+from app.chunking.exporter import export_chunks
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -60,11 +63,19 @@ def ingest_pdf(file: UploadFile = File(...)):
         output_path = export_ingested_document(ingested_document)
         report_path = export_ingestion_report(ingested_document)
 
+        chunks = chunk_document(ingested_document)
+        chunks_path = export_chunks(
+            document_id=ingested_document.metadata.document_id,
+            chunks=chunks
+        )
+
         return IngestionResponse(
             status="completed",
-            message="PDF ingested successfully",
+            message="PDF ingested and chunked successfully",
             output_path=output_path,
             report_path=report_path,
+            chunks_path=chunks_path,
+            chunk_count=len(chunks),
             document=ingested_document
         )
 

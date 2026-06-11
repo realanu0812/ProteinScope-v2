@@ -20,3 +20,8 @@ data/
 
 # IDE
 .vscode/
+
+# Generated chunks
+
+apps/api/outputs/chunks/
+

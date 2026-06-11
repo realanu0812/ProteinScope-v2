@@ -273,3 +273,32 @@ The Markdown report summarizes:
 
 This helps validate parser quality before chunking and embedding.
 EOF
+
+## Baseline Chunking Flow
+
+Current flow:
+
+```text
+section_blocks
+    ↓
+character-based splitter
+    ↓
+overlap applied
+    ↓
+metadata-rich chunks
+    ↓
+export chunks JSON
+Each chunk contains:
+{
+  "chunk_id": "...",
+  "document_id": "...",
+  "source_type": "scientific_paper",
+  "trust_level": "verified",
+  "section": "results",
+  "start_page": 4,
+  "end_page": 5,
+  "chunk_index": 12,
+  "text": "...",
+  "char_count": 800
+}
+This is the first retrieval-ready data unit.
