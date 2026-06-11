@@ -1,0 +1,93 @@
+# Ingestion Report
+
+## Document
+
+- Document ID: `7e7b3f84-fff3-48cb-889d-d36d08daeeb4`
+- Filename: `2604.17091v1.pdf`
+- Title: GenericAgent: A Token-Efficient Self-Evolving LLM Agent via Contextual Information Density Maximization (V1.0)
+- Author: Jiaqing Liang; Jinyi Han; Weijia Li; Xinyi Wang; Zhoujia Zhang; Zishang Jiang; Ying Liao; Tingyun Li; Ying Huang; Hao Shen; Hanyu Wu; Fang Guo; Keyi Wang; Zhonghua Hong; Zhiyu Lu; Lipeng Ma; Sihang Jiang; Yanghua Xiao
+- Source Type: `scientific_paper`
+- Trust Level: `verified`
+- Parser: `pymupdf`
+- Parser Version: `1.27.2.3`
+- Created At: `2026-06-11 10:04:13.686183+00:00`
+
+## Extraction Metrics
+
+- Total Pages in PDF: 47
+- Extracted Pages: 47
+- Skipped Pages: 0
+- Total Characters: 153426
+- Average Characters/Page: 3264.38
+- Section Blocks: 14
+
+## Section Blocks
+
+| # | Section | Pages | Characters | Preview |
+|---|---|---|---:|---|
+| 1 | unknown | 1 | 205 | GenericAgent: A Token-Efficient Self-Evolving LLM Agent via Contextual Information Density Maximization (V1.0) Advantage AI Agent Lab (A3 La... |
+| 2 | abstract | 1 | 1384 | Abstract Long-horizon large language model (LLM) agents are fundamentally limited by context. As interactions become longer, tool descriptio... |
+| 3 | introduction | 1-15 | 58549 | Introduction The recent emergence of agentic systems such as Claude Code [1], OpenAI Codex [2], and OpenClaw [3] marks a qualitative shift i... |
+| 4 | results | 15-19 | 11085 | Results GA consistently achieves state-of-the-art or highly competitive task completion rates. As detailed in Table 2, GA’s robust performan... |
+| 5 | results | 19 | 1874 | Results. GA continuously improves operational efficiency through repeated use by successfully converting raw task experience into reusable m... |
+| 6 | results | 19-20 | 2394 | Results. Filtered, high-density memory provides optimal behavioral guidance while drastically minimizing contextual burden. As shown in Tabl... |
+| 7 | results | 20 | 1449 | Results. Precise memory organization enables GA to exceed the factual retention capabilities of dedicated vector-based retrieval systems. As... |
+| 8 | results | 20-23 | 12284 | Results. Hierarchical retrieval strictly isolates idle memory from the active prompt, eliminating the risk of context explosion. As shown in... |
+| 9 | results | 23-24 | 2360 | Results GA consistently outperforms the baseline in web navigation and reasoning while operating at a fraction of the token cost. As shown i... |
+| 10 | discussion | 24-26 | 12029 | Discussion We highlight key findings from the development of GenericAgent that we believe are broadly relevant to the design of long-horizon... |
+| 11 | conclusion | 27 | 1299 | Conclusion We present GenericAgent (GA), a self-evolving general-purpose LLM agent built around a single design principle: context informati... |
+| 12 | references | 28-33 | 13476 | References [1] Anthropic. Claude code. https://www.anthropic.com/product/claude-code, 2025. [2] OpenAI. Introducing codex. https://openai.co... |
+| 13 | results | 33-46 | 33678 | results web_execute_js + web_scan Online search can be completed through browser interaction plus webpage reading. Claude Code NotebookEditT... |
+| 14 | results | 46-47 | 1393 | Findings: - Discovered a significant number of arXiv preprint entries with incorrect metadata (wrong year, mismatched titles, incomplete aut... |
+
+## Page Summary
+
+| Page | Characters |
+|---:|---:|
+| 1 | 3241 |
+| 2 | 4608 |
+| 3 | 4377 |
+| 4 | 2967 |
+| 5 | 4754 |
+| 6 | 2746 |
+| 7 | 4600 |
+| 8 | 5129 |
+| 9 | 4381 |
+| 10 | 4317 |
+| 11 | 3616 |
+| 12 | 4149 |
+| 13 | 4289 |
+| 14 | 3934 |
+| 15 | 3240 |
+| 16 | 3378 |
+| 17 | 4034 |
+| 18 | 3217 |
+| 19 | 3852 |
+| 20 | 3220 |
+| 21 | 3743 |
+| 22 | 4153 |
+| 23 | 4257 |
+| 24 | 4191 |
+| 25 | 4661 |
+| 26 | 4543 |
+| 27 | 1299 |
+| 28 | 3933 |
+| 29 | 4280 |
+| 30 | 506 |
+| 31 | 2821 |
+| 32 | 1015 |
+| 33 | 1683 |
+| 34 | 2126 |
+| 35 | 2505 |
+| 36 | 2171 |
+| 37 | 2231 |
+| 38 | 3025 |
+| 39 | 2065 |
+| 40 | 2255 |
+| 41 | 2921 |
+| 42 | 2831 |
+| 43 | 2920 |
+| 44 | 2965 |
+| 45 | 2581 |
+| 46 | 2761 |
+| 47 | 935 |

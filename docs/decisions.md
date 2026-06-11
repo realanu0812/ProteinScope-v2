@@ -447,3 +447,12 @@ Current limitation:
 - sentence splitting is still regex-based
 - scientific abbreviations may still be imperfect
 - later we may use token-aware or NLP-based splitting
+## Decision 28: Add Chunk Validation Before Embeddings
+
+We will validate chunks before generating embeddings.
+
+Reason:
+- Bad chunks create bad embeddings
+- Chunk issues are easier to fix before vector indexing
+- Validation catches extremely small, oversized, or poorly structured chunks
+- This creates a quality gate before retrieval

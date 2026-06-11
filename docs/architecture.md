@@ -351,3 +351,15 @@ Before embedding chunks, we inspect:
 - overlap redundancy
 
 This prevents bad chunks from becoming bad embeddings.
+
+## Chunk Validation
+
+Before embeddings, chunks will be checked for:
+
+- very small chunks
+- oversized chunks
+- missing section labels
+- suspicious starts
+- empty text
+
+This acts as a quality gate before vector indexing.
