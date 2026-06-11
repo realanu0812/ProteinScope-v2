@@ -475,3 +475,21 @@ Reason:
 - Keeps chunks readable
 - Avoids mid-word overlap
 - Improves quality before embeddings
+
+## Decision 30: Start With Local Sentence Transformer Embeddings
+
+We will start embedding chunks using a local Sentence Transformer model.
+
+Initial model:
+- sentence-transformers/all-MiniLM-L6-v2
+
+Reason:
+- Free for local experimentation
+- Fast enough for development
+- Avoids API cost during early iteration
+- Helps understand embeddings directly before using managed providers
+
+Current limitation:
+- May be weaker than larger embedding models
+- CPU inference may be slower for large documents
+- Later we may add OpenAI, Gemini, BGE, or E5 through the same provider abstraction

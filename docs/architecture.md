@@ -376,3 +376,20 @@ if previous_sentence_overlap <= 250 chars:
 else:
     skip overlap
 Chunk validation now fails when chunks are empty, too small, or too large.
+
+## Embedding Layer
+
+ProteinScope will use an abstract embedding provider.
+
+Initial provider:
+
+```text
+sentence-transformers/all-MiniLM-L6-v2
+Planned structure:
+apps/api/app/embeddings/
+├── provider.py
+├── schemas.py
+└── sentence_transformer_provider.py
+Design principle:
+
+The rest of the system should not depend directly on one embedding model or vendor.
