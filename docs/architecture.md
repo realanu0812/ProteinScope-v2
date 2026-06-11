@@ -337,3 +337,17 @@ The chunk report summarizes:
 * chunk previews
 
 This helps validate chunk quality before embeddings are generated.
+
+## Chunk Quality Review Checklist
+
+Before embedding chunks, we inspect:
+
+- readability
+- chunk size distribution
+- section preservation
+- page range correctness
+- reference section noise
+- table extraction quality
+- overlap redundancy
+
+This prevents bad chunks from becoming bad embeddings.

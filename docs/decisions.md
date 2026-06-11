@@ -409,3 +409,41 @@ Reason:
 
 Current report path:
 outputs/chunks/{document_id}_chunks_report.md
+
+## Decision 26: Review Chunk Quality Before Embedding
+
+We will inspect chunk reports before generating embeddings.
+
+Reason:
+- Embeddings preserve the quality of input text
+- Bad chunks lead to poor retrieval
+- Chunking issues are easier to fix before indexing
+- This avoids polluting the vector database with low-quality vectors
+
+## Decision 27: Replace Character-Level Overlap With Sentence-Level Overlap
+
+We observed that character-level overlap caused some chunks to start in the middle of words or sentences.
+
+Problem example:
+- chunk starts with `resent GenericAgent...`
+- chunk starts with `e at the outset...`
+
+We replaced character-level overlap with sentence-level overlap.
+
+Reason:
+- Prevents broken chunk starts
+- Preserves semantic readability
+- Makes chunks better retrieval units
+- Improves future citation-backed generation quality
+
+Current strategy:
+- split by paragraphs
+- split paragraphs into sentences
+- group sentences up to target chunk size
+- use the last full sentence from the previous chunk as overlap
+- split oversized sentences only on word boundaries
+
+Current limitation:
+- sentence splitting is still regex-based
+- scientific abbreviations may still be imperfect
+- later we may use token-aware or NLP-based splitting

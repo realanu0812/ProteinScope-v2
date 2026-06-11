@@ -7,141 +7,125 @@ from app.chunking.schemas import TextChunk
 
 
 TARGET_CHUNK_SIZE = 900
-CHUNK_OVERLAP = 150
-
-
-def split_large_text_with_overlap(
-    text: str,
-    target_size: int = TARGET_CHUNK_SIZE,
-    overlap: int = CHUNK_OVERLAP
-) -> List[str]:
-    """
-    Fallback splitter for very large text pieces.
-    Used only when paragraph/sentence splitting is not enough.
-    """
-
-    text = text.strip()
-
-    if len(text) <= target_size:
-        return [text]
-
-    chunks = []
-    start = 0
-
-    while start < len(text):
-        end = start + target_size
-        chunk = text[start:end].strip()
-
-        if chunk:
-            chunks.append(chunk)
-
-        start = end - overlap
-
-        if start >= len(text):
-            break
-
-    return chunks
-
-
-def split_into_sentences(text: str) -> List[str]:
-    """
-    Basic sentence splitter.
-
-    Conservative approach:
-    - handles common sentence endings
-    - not perfect for scientific abbreviations
-    - good enough as a baseline before NLP-based splitting
-    """
-
-    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
-    return [sentence.strip() for sentence in sentences if sentence.strip()]
+CHUNK_OVERLAP_SENTENCES = 1
 
 
 def split_into_paragraphs(text: str) -> List[str]:
+    """
+    Splits text into paragraphs using blank lines.
+    """
+
     paragraphs = re.split(r"\n\s*\n", text.strip())
     return [paragraph.strip() for paragraph in paragraphs if paragraph.strip()]
 
 
-def add_overlap(previous_chunk: str, current_text: str, overlap: int = CHUNK_OVERLAP) -> str:
+def split_into_sentences(text: str) -> List[str]:
     """
-    Adds trailing context from previous chunk to current chunk.
+    Baseline sentence splitter.
+
+    This avoids character-based overlap so chunks do not start mid-word.
+    It is still a baseline and may be improved later with an NLP/tokenizer-based splitter.
     """
 
-    if not previous_chunk:
-        return current_text
+    # Normalize internal whitespace but preserve readable sentence boundaries.
+    text = re.sub(r"\s+", " ", text.strip())
 
-    overlap_text = previous_chunk[-overlap:].strip()
+    # Split on sentence-ending punctuation followed by whitespace and likely next sentence start.
+    sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z0-9(])", text)
+    return [sentence.strip() for sentence in sentences if sentence.strip()]
 
-    if not overlap_text:
-        return current_text
 
-    return f"{overlap_text}\n{current_text}".strip()
+def split_oversized_sentence(sentence: str, target_size: int = TARGET_CHUNK_SIZE) -> List[str]:
+    """
+    Fallback for rare oversized sentences.
+
+    Instead of cutting blindly at exactly target_size, split on word boundaries.
+    """
+
+    words = sentence.split()
+    chunks: List[str] = []
+    current_words: List[str] = []
+
+    for word in words:
+        candidate = " ".join(current_words + [word]).strip()
+
+        if len(candidate) <= target_size:
+            current_words.append(word)
+        else:
+            if current_words:
+                chunks.append(" ".join(current_words).strip())
+            current_words = [word]
+
+    if current_words:
+        chunks.append(" ".join(current_words).strip())
+
+    return chunks
 
 
 def recursive_split_text(text: str, target_size: int = TARGET_CHUNK_SIZE) -> List[str]:
     """
-    Recursive-ish baseline splitter:
-    1. Preserve paragraphs when possible
-    2. Split large paragraphs into sentences
-    3. Split oversized sentences by characters
+    Section-aware recursive splitter.
+
+    Priority:
+    1. Preserve paragraphs
+    2. Preserve sentences
+    3. Fall back to word-boundary splitting for oversized sentences
+    4. Add sentence-level overlap, not character-level overlap
+
+    This prevents chunks from starting in the middle of words or sentences.
     """
 
     paragraphs = split_into_paragraphs(text)
-
     raw_chunks: List[str] = []
-    current_chunk = ""
+    current_sentences: List[str] = []
+
+    def current_text() -> str:
+        return " ".join(current_sentences).strip()
+
+    def flush_current() -> None:
+        nonlocal current_sentences
+        text_to_add = current_text()
+        if text_to_add:
+            raw_chunks.append(text_to_add)
+        current_sentences = []
 
     for paragraph in paragraphs:
-        if len(paragraph) > target_size:
-            if current_chunk:
-                raw_chunks.append(current_chunk.strip())
-                current_chunk = ""
+        sentences = split_into_sentences(paragraph)
 
-            sentences = split_into_sentences(paragraph)
-            sentence_buffer = ""
+        for sentence in sentences:
+            if len(sentence) > target_size:
+                flush_current()
+                raw_chunks.extend(split_oversized_sentence(sentence, target_size))
+                continue
 
-            for sentence in sentences:
-                if len(sentence) > target_size:
-                    if sentence_buffer:
-                        raw_chunks.append(sentence_buffer.strip())
-                        sentence_buffer = ""
+            candidate = " ".join(current_sentences + [sentence]).strip()
 
-                    raw_chunks.extend(split_large_text_with_overlap(sentence))
-                    continue
+            if len(candidate) <= target_size:
+                current_sentences.append(sentence)
+            else:
+                flush_current()
+                current_sentences.append(sentence)
 
-                candidate = f"{sentence_buffer} {sentence}".strip()
+    flush_current()
 
-                if len(candidate) <= target_size:
-                    sentence_buffer = candidate
-                else:
-                    if sentence_buffer:
-                        raw_chunks.append(sentence_buffer.strip())
-                    sentence_buffer = sentence
+    if not raw_chunks:
+        return []
 
-            if sentence_buffer:
-                raw_chunks.append(sentence_buffer.strip())
-
-            continue
-
-        candidate = f"{current_chunk}\n\n{paragraph}".strip()
-
-        if len(candidate) <= target_size:
-            current_chunk = candidate
-        else:
-            if current_chunk:
-                raw_chunks.append(current_chunk.strip())
-            current_chunk = paragraph
-
-    if current_chunk:
-        raw_chunks.append(current_chunk.strip())
-
-    chunks_with_overlap = []
+    chunks_with_overlap: List[str] = []
 
     for index, chunk in enumerate(raw_chunks):
         if index == 0:
             chunks_with_overlap.append(chunk)
+            continue
+
+        previous_sentences = split_into_sentences(raw_chunks[index - 1])
+        overlap_sentences = previous_sentences[-CHUNK_OVERLAP_SENTENCES:]
+        overlap_text = " ".join(overlap_sentences).strip()
+
+        if overlap_text:
+            chunks_with_overlap.append(f"{overlap_text} {chunk}".strip())
         else:
-            chunks_with_overlap.append(add_overlap(raw_chunks[index - 1], chunk))
+            chunks_with_overlap.append(chunk)
 
     return chunks_with_overlap
 
