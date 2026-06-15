@@ -1,10 +1,10 @@
 from typing import List
 
-from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
-from app.retrieval.schemas import SearchResult
+from qdrant_client import QdrantClient # type: ignore
+from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, PointStruct, VectorParams # type: ignore
 
-from app.embeddings.schemas import ChunkEmbedding
+from ..embeddings.schemas import ChunkEmbedding
+from ..retrieval.schemas import SearchResult
 
 
 COLLECTION_NAME = "proteinscope_chunks"
@@ -75,6 +75,14 @@ class QdrantVectorStore:
             collection_name=COLLECTION_NAME,
             query_vector=query_vector,
             limit=top_k,
+            query_filter=Filter(
+                must_not=[
+                    FieldCondition(
+                        key="section",
+                        match=MatchValue(value="references"),
+                    )
+                ]
+            ),
         )
 
         search_results = []
