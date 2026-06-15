@@ -455,3 +455,21 @@ Each Qdrant point contains:
 * embedding_model
 
 This enables future dense retrieval and metadata filtering.
+
+## Dense Retrieval Flow
+
+Current search flow:
+
+```text
+User Query
+    ↓
+SentenceTransformerEmbeddingProvider
+    ↓
+Query Vector
+    ↓
+Qdrant Similarity Search
+    ↓
+Top-k Chunks with Metadata
+The same embedding model is used for document chunks and user queries.
+
+This is required because vectors must live in the same embedding space.

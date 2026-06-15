@@ -2,6 +2,7 @@ from typing import List
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
+from app.retrieval.schemas import SearchResult
 
 from app.embeddings.schemas import ChunkEmbedding
 
@@ -62,3 +63,38 @@ class QdrantVectorStore:
         )
 
         return len(points)
+
+    def search(
+        self,
+        query_vector: List[float],
+        top_k: int = 5,
+    ) -> List[SearchResult]:
+        self.ensure_collection()
+
+        results = self.client.search(
+            collection_name=COLLECTION_NAME,
+            query_vector=query_vector,
+            limit=top_k,
+        )
+
+        search_results = []
+
+        for result in results:
+            payload = result.payload or {}
+
+            search_results.append(
+                SearchResult(
+                    score=result.score,
+                    chunk_id=payload.get("chunk_id"),
+                    document_id=payload.get("document_id"),
+                    chunk_index=payload.get("chunk_index"),
+                    source_type=payload.get("source_type"),
+                    trust_level=payload.get("trust_level"),
+                    section=payload.get("section"),
+                    start_page=payload.get("start_page"),
+                    end_page=payload.get("end_page"),
+                    text=payload.get("text"),
+                )
+            )
+
+        return search_results

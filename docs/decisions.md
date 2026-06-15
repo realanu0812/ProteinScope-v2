@@ -540,3 +540,25 @@ Initial collection:
 Current limitation:
 - Collection size is tied to all-MiniLM-L6-v2 embedding dimension.
 - If embedding model changes, vectors must be re-indexed or a new collection must be created.
+
+## Decision 34: Add Baseline Dense Retrieval Endpoint
+
+We added a basic dense retrieval endpoint using query embeddings and Qdrant similarity search.
+
+Current flow:
+- user query
+- embed query using same embedding provider as documents
+- search Qdrant
+- return top-k chunks with metadata
+
+Reason:
+- Verifies that indexed chunks are searchable
+- Establishes the first retrieval layer
+- Lets us inspect retrieval quality before generation
+- Keeps retrieval separate from LLM answering
+
+Current limitation:
+- Dense retrieval only
+- No hybrid BM25 yet
+- No reranking yet
+- No metadata filters yet

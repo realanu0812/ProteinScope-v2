@@ -1,4 +1,4 @@
-import pymupdf
+import pymupdf # type: ignore
 from pathlib import Path
 
 from .cleaner import clean_text, is_useful_text
