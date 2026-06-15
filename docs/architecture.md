@@ -502,13 +502,13 @@ Example request:
 
 The API converts these fields into a Qdrant filter using must conditions.
 By default, section = references is excluded using must_not unless include_references is true.
+
 ## Retrieval Debug Logging
 
 Each `/search` call is logged to JSONL.
 
 Current log path:
 
-```text
 outputs/retrieval/search_logs.jsonl
 This helps inspect:
 
@@ -519,3 +519,28 @@ This helps inspect:
 * whether retrieved sections were appropriate
 
 This is an early observability layer for retrieval quality.
+
+## BM25 Keyword Retrieval
+
+ProteinScope now supports separate BM25 keyword retrieval.
+
+Flow:
+
+chunks JSON
+    ↓
+BM25Index
+    ↓
+keyword scoring
+    ↓
+top-k chunks
+
+BM25 is useful for exact matches such as:
+
+* gene/protein names
+* abbreviations
+* dosage values
+* section-specific keywords
+* paper-specific terms
+
+This prepares the system for hybrid retrieval.
+EOF

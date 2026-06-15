@@ -1,7 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field # type: ignore
-
+from pydantic import BaseModel, Field
 
 
 class SearchRequest(BaseModel):
@@ -12,6 +11,12 @@ class SearchRequest(BaseModel):
     trust_level: Optional[str] = None
     section: Optional[str] = None
     include_references: bool = False
+
+
+class BM25SearchRequest(BaseModel):
+    query: str = Field(min_length=1)
+    chunks_path: str
+    top_k: int = 5
 
 
 class SearchResult(BaseModel):

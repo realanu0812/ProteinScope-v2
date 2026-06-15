@@ -625,6 +625,24 @@ Reason:
 - Makes dense retrieval behavior observable
 
 Current output:
-
-```text
 outputs/retrieval/search_logs.jsonl
+
+## Decision 38: Add BM25 Keyword Retrieval as a Separate Endpoint
+
+We added BM25 keyword retrieval before implementing hybrid search.
+
+Current endpoint:
+
+POST /search/bm25
+Reason:
+
+* BM25 catches exact terms that dense embeddings may miss
+* Scientific/biomedical text contains exact tokens like TP53, IL-6, EGFR, p-value, and dosage values
+* Keeping BM25 separate first makes comparison with dense retrieval easier
+* Hybrid search will later combine dense and BM25 results
+
+Current limitation:
+
+* BM25 index is built from exported chunk JSON per request
+* This is acceptable for learning/debugging, but not production-efficient
+* Later we will use a persistent keyword index or database-backed full-text search
