@@ -562,3 +562,43 @@ Current limitation:
 - No hybrid BM25 yet
 - No reranking yet
 - No metadata filters yet
+
+## Decision 35: Exclude References From Default Retrieval
+
+We observed that dense retrieval returned references for broad queries like "what methods were used?"
+
+Reason:
+- References contain many overlapping academic terms
+- Dense retrieval treats all indexed chunks equally
+- References are usually low-value for answering content questions
+
+Decision:
+- Exclude section=references from default search results
+- Later, allow references only when user explicitly asks for bibliography/source references
+
+This is an example of metadata-aware retrieval improving dense search quality.
+
+## Decision 36: Add Metadata-Aware Dense Retrieval Filters
+
+We extended dense retrieval to support optional metadata filters.
+
+Current supported filters:
+
+* document_id
+* source_type
+* trust_level
+* section
+* include_references
+
+Default behavior:
+
+* references are excluded unless include_references is true
+
+Reason:
+
+* improves retrieval precision
+* supports source-separated retrieval
+* prepares for Evidence vs Community routing
+* supports future user/workspace-specific retrieval
+
+This is our first flexible metadata-aware retrieval layer.

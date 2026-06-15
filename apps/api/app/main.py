@@ -139,8 +139,8 @@ def search_chunks(request: SearchRequest):
 
     vector_store = QdrantVectorStore()
     results = vector_store.search(
-        query_vector=query_vector,
-        top_k=request.top_k,
+    query_vector=query_vector,
+    request=request,
     )
 
     return SearchResponse(

@@ -4,7 +4,7 @@ from qdrant_client import QdrantClient # type: ignore
 from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, PointStruct, VectorParams # type: ignore
 
 from ..embeddings.schemas import ChunkEmbedding
-from ..retrieval.schemas import SearchResult
+from ..retrieval.schemas import SearchResult, SearchRequest
 
 
 COLLECTION_NAME = "proteinscope_chunks"
@@ -65,44 +65,88 @@ class QdrantVectorStore:
         return len(points)
 
     def search(
-        self,
-        query_vector: List[float],
-        top_k: int = 5,
-    ) -> List[SearchResult]:
-        self.ensure_collection()
+      self,
+      query_vector: List[float],
+      request: SearchRequest,
+  ) -> List[SearchResult]:
+      self.ensure_collection()
 
-        results = self.client.search(
-            collection_name=COLLECTION_NAME,
-            query_vector=query_vector,
-            limit=top_k,
-            query_filter=Filter(
-                must_not=[
-                    FieldCondition(
-                        key="section",
-                        match=MatchValue(value="references"),
-                    )
-                ]
-            ),
-        )
+      must_conditions = []
+      must_not_conditions = []
 
-        search_results = []
+      if request.document_id:
+          must_conditions.append(
+              FieldCondition(
+                  key="document_id",
+                  match=MatchValue(value=request.document_id),
+              )
+          )
 
-        for result in results:
-            payload = result.payload or {}
+      if request.source_type:
+          must_conditions.append(
+              FieldCondition(
+                  key="source_type",
+                  match=MatchValue(value=request.source_type),
+              )
+          )
 
-            search_results.append(
-                SearchResult(
-                    score=result.score,
-                    chunk_id=payload.get("chunk_id"),
-                    document_id=payload.get("document_id"),
-                    chunk_index=payload.get("chunk_index"),
-                    source_type=payload.get("source_type"),
-                    trust_level=payload.get("trust_level"),
-                    section=payload.get("section"),
-                    start_page=payload.get("start_page"),
-                    end_page=payload.get("end_page"),
-                    text=payload.get("text"),
-                )
-            )
+      if request.trust_level:
+          must_conditions.append(
+              FieldCondition(
+                  key="trust_level",
+                  match=MatchValue(value=request.trust_level),
+              )
+          )
 
-        return search_results
+      if request.section:
+          must_conditions.append(
+              FieldCondition(
+                  key="section",
+                  match=MatchValue(value=request.section),
+              )
+          )
+
+      if not request.include_references:
+          must_not_conditions.append(
+              FieldCondition(
+                  key="section",
+                  match=MatchValue(value="references"),
+              )
+          )
+
+      query_filter = None
+
+      if must_conditions or must_not_conditions:
+          query_filter = Filter(
+              must=must_conditions or None,
+              must_not=must_not_conditions or None,
+          )
+
+      results = self.client.search(
+          collection_name=COLLECTION_NAME,
+          query_vector=query_vector,
+          query_filter=query_filter,
+          limit=request.top_k,
+      )
+
+      search_results = []
+
+      for result in results:
+          payload = result.payload or {}
+
+          search_results.append(
+              SearchResult(
+                  score=result.score,
+                  chunk_id=payload.get("chunk_id"),
+                  document_id=payload.get("document_id"),
+                  chunk_index=payload.get("chunk_index"),
+                  source_type=payload.get("source_type"),
+                  trust_level=payload.get("trust_level"),
+                  section=payload.get("section"),
+                  start_page=payload.get("start_page"),
+                  end_page=payload.get("end_page"),
+                  text=payload.get("text"),
+              )
+          )
+
+      return search_results

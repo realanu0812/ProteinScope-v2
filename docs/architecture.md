@@ -460,7 +460,6 @@ This enables future dense retrieval and metadata filtering.
 
 Current search flow:
 
-```text
 User Query
     ↓
 SentenceTransformerEmbeddingProvider
@@ -473,3 +472,33 @@ Top-k Chunks with Metadata
 The same embedding model is used for document chunks and user queries.
 
 This is required because vectors must live in the same embedding space.
+
+## Default Retrieval Filter
+
+Default dense retrieval excludes references.
+
+Current filter:
+
+must_not section = references
+Reason:
+
+* references often create noisy matches
+* scientific QA usually needs abstract, methods, results, discussion, or conclusion
+* references can be retrieved later through an explicit reference-specific mode
+
+## Metadata-Aware Dense Retrieval
+
+The `/search` endpoint now supports optional metadata filters.
+
+Example request:
+
+{
+  "query": "what methods were used?",
+  "top_k": 5,
+  "section": "methods",
+  "source_type": "scientific_paper",
+  "trust_level": "verified"
+}
+
+The API converts these fields into a Qdrant filter using must conditions.
+By default, section = references is excluded using must_not unless include_references is true.

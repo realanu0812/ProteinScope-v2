@@ -1,11 +1,17 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field # type: ignore
+
 
 
 class SearchRequest(BaseModel):
     query: str = Field(min_length=1)
     top_k: int = 5
+    document_id: Optional[str] = None
+    source_type: Optional[str] = None
+    trust_level: Optional[str] = None
+    section: Optional[str] = None
+    include_references: bool = False
 
 
 class SearchResult(BaseModel):
