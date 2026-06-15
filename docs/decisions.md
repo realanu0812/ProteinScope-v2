@@ -602,3 +602,29 @@ Reason:
 * supports future user/workspace-specific retrieval
 
 This is our first flexible metadata-aware retrieval layer.
+
+## Decision 37: Log Search Events for Retrieval Debugging
+
+We will log every search request and its returned chunks.
+
+Logged fields:
+- timestamp
+- query
+- filters
+- top_k
+- scores
+- chunk IDs
+- sections
+- page ranges
+- text previews
+
+Reason:
+- Helps debug poor retrieval
+- Helps compare retrieval improvements over time
+- Prepares for future retrieval evaluation
+- Makes dense retrieval behavior observable
+
+Current output:
+
+```text
+outputs/retrieval/search_logs.jsonl

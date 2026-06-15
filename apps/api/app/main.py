@@ -2,25 +2,22 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
-
-from app.ingestion.pdf_loader import load_pdf
-from app.ingestion.exporter import export_ingested_document
-from app.ingestion.reporter import export_ingestion_report
-from app.ingestion.schemas import IngestionResponse
-from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
+from fastapi import FastAPI, File, HTTPException, UploadFile  # type: ignore
 
 from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
 from app.chunking.reporter import export_chunk_report
-
 from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embeddings
 from app.embeddings.reporter import export_embedding_report
 from app.embeddings.sentence_transformer_provider import SentenceTransformerEmbeddingProvider
-
-from app.vector_store.qdrant_store import QdrantVectorStore
-
+from app.ingestion.exporter import export_ingested_document
+from app.ingestion.pdf_loader import load_pdf
+from app.ingestion.reporter import export_ingestion_report
+from app.ingestion.schemas import IngestionResponse
+from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
+from app.retrieval.logger import log_search_event
 from app.retrieval.schemas import SearchRequest, SearchResponse
+from app.vector_store.qdrant_store import QdrantVectorStore
 
 
 app = FastAPI(
@@ -139,8 +136,13 @@ def search_chunks(request: SearchRequest):
 
     vector_store = QdrantVectorStore()
     results = vector_store.search(
-    query_vector=query_vector,
-    request=request,
+        query_vector=query_vector,
+        request=request,
+    )
+
+    log_search_event(
+        request=request,
+        results=results,
     )
 
     return SearchResponse(

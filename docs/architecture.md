@@ -502,3 +502,20 @@ Example request:
 
 The API converts these fields into a Qdrant filter using must conditions.
 By default, section = references is excluded using must_not unless include_references is true.
+## Retrieval Debug Logging
+
+Each `/search` call is logged to JSONL.
+
+Current log path:
+
+```text
+outputs/retrieval/search_logs.jsonl
+This helps inspect:
+
+* what query was searched
+* which filters were applied
+* which chunks were returned
+* what scores were assigned
+* whether retrieved sections were appropriate
+
+This is an early observability layer for retrieval quality.
