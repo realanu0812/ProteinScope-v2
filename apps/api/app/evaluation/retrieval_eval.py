@@ -4,9 +4,10 @@ from typing import Dict, List
 
 from app.chunking.loader import load_chunks_from_file
 from app.embeddings.sentence_transformer_provider import SentenceTransformerEmbeddingProvider
+from app.reranking.reranker import CrossEncoderReranker
 from app.retrieval.bm25_index import BM25Index, filter_chunks
 from app.retrieval.hybrid_search import reciprocal_rank_fusion
-from app.retrieval.schemas import HybridSearchRequest, SearchRequest, SearchResult
+from app.retrieval.schemas import SearchRequest, SearchResult
 from app.vector_store.qdrant_store import QdrantVectorStore
 
 
@@ -37,20 +38,55 @@ def compute_section_metrics(
     }
 
 
-def evaluate_hybrid_retrieval(
+def summarize_strategy(strategy_name: str, per_query_results: List[Dict], top_k: int) -> Dict:
+    average_hit_at_k = sum(
+        item["metrics"]["hit_at_k"] for item in per_query_results
+    ) / len(per_query_results)
+
+    average_precision_at_k = sum(
+        item["metrics"]["precision_at_k"] for item in per_query_results
+    ) / len(per_query_results)
+
+    return {
+        "strategy": strategy_name,
+        "top_k": top_k,
+        "query_count": len(per_query_results),
+        "average_hit_at_k": round(average_hit_at_k, 4),
+        "average_precision_at_k": round(average_precision_at_k, 4),
+        "per_query_results": per_query_results,
+    }
+
+
+def evaluate_retrieval_strategies(
     eval_path: str,
     chunks_path: str,
     top_k: int = 5,
     dense_k: int = 20,
     bm25_k: int = 20,
+    rerank_top_k: int = 5,
+    use_reranker: bool = True,
 ) -> Dict:
     eval_items = load_eval_set(eval_path)
     chunks = load_chunks_from_file(chunks_path)
 
+    filtered_chunks = filter_chunks(
+        chunks=chunks,
+        source_type="scientific_paper",
+        trust_level="verified",
+        include_references=False,
+    )
+
     embedding_provider = SentenceTransformerEmbeddingProvider()
     vector_store = QdrantVectorStore()
+    bm25_index = BM25Index(filtered_chunks)
+    reranker = CrossEncoderReranker() if use_reranker else None
 
-    per_query_results = []
+    strategy_results = {
+        "dense": [],
+        "bm25": [],
+        "hybrid": [],
+        "reranked": [],
+    }
 
     for item in eval_items:
         query = item["query"]
@@ -71,14 +107,6 @@ def evaluate_hybrid_retrieval(
             request=dense_request,
         )
 
-        filtered_chunks = filter_chunks(
-            chunks=chunks,
-            source_type="scientific_paper",
-            trust_level="verified",
-            include_references=False,
-        )
-
-        bm25_index = BM25Index(filtered_chunks)
         bm25_results = bm25_index.search(
             query=query,
             top_k=bm25_k,
@@ -87,46 +115,67 @@ def evaluate_hybrid_retrieval(
         hybrid_results = reciprocal_rank_fusion(
             dense_results=dense_results,
             bm25_results=bm25_results,
+            top_k=max(top_k, dense_k, bm25_k),
+        )
+
+        if reranker:
+            reranked_results = reranker.rerank(
+                query=query,
+                results=hybrid_results,
+                top_k=rerank_top_k,
+            )
+        else:
+            reranked_results = []
+
+        strategy_to_results = {
+            "dense": dense_results[:top_k],
+            "bm25": bm25_results[:top_k],
+            "hybrid": hybrid_results[:top_k],
+            "reranked": reranked_results[:top_k],
+        }
+
+        for strategy_name, results in strategy_to_results.items():
+            if strategy_name == "reranked" and not use_reranker:
+                continue
+
+            metrics = compute_section_metrics(
+                results=results,
+                relevant_sections=relevant_sections,
+                top_k=top_k,
+            )
+
+            strategy_results[strategy_name].append(
+                {
+                    "query": query,
+                    "relevant_sections": relevant_sections,
+                    "metrics": metrics,
+                    "retrieved_sections": [
+                        result.section for result in results[:top_k]
+                    ],
+                    "retrieved_chunk_indices": [
+                        result.chunk_index for result in results[:top_k]
+                    ],
+                }
+            )
+
+    final_results = {}
+
+    for strategy_name, per_query_results in strategy_results.items():
+        if not per_query_results:
+            continue
+
+        final_results[strategy_name] = summarize_strategy(
+            strategy_name=strategy_name,
+            per_query_results=per_query_results,
             top_k=top_k,
         )
-
-        metrics = compute_section_metrics(
-            results=hybrid_results,
-            relevant_sections=relevant_sections,
-            top_k=top_k,
-        )
-
-        per_query_results.append(
-            {
-                "query": query,
-                "relevant_sections": relevant_sections,
-                "metrics": metrics,
-                "retrieved_sections": [
-                    result.section for result in hybrid_results[:top_k]
-                ],
-                "retrieved_chunk_indices": [
-                    result.chunk_index for result in hybrid_results[:top_k]
-                ],
-            }
-        )
-
-    average_hit_at_k = sum(
-        item["metrics"]["hit_at_k"] for item in per_query_results
-    ) / len(per_query_results)
-
-    average_precision_at_k = sum(
-        item["metrics"]["precision_at_k"] for item in per_query_results
-    ) / len(per_query_results)
 
     return {
-        "strategy": "hybrid",
         "top_k": top_k,
         "dense_k": dense_k,
         "bm25_k": bm25_k,
-        "query_count": len(per_query_results),
-        "average_hit_at_k": round(average_hit_at_k, 4),
-        "average_precision_at_k": round(average_precision_at_k, 4),
-        "per_query_results": per_query_results,
+        "rerank_top_k": rerank_top_k,
+        "strategy_comparison": final_results,
     }
 
 

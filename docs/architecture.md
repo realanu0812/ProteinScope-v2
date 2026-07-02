@@ -645,7 +645,6 @@ This will later be upgraded to chunk-level golden labels.
 
 Current evaluation runner:
 
-```text
 apps/api/run_retrieval_eval.py
 It evaluates hybrid retrieval using:
 
@@ -656,3 +655,21 @@ It evaluates hybrid retrieval using:
 
 Outputs:
 outputs/evals/retrieval_eval_results.json
+
+## Retrieval Strategy Evaluation
+
+The retrieval evaluator now compares:
+
+```text
+Dense
+BM25
+Hybrid
+Reranked Hybrid
+For each strategy, it reports:
+
+* Hit@K
+* Precision@K
+* retrieved sections
+* retrieved chunk indices
+
+This allows us to quantify improvements from hybrid retrieval and reranking.

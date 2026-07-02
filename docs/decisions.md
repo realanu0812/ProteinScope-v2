@@ -753,3 +753,26 @@ Reason:
 Current limitation:
 - Uses section labels as proxy relevance
 - Later evaluation should use manually labeled relevant chunk IDs
+
+## Decision 45: Compare Dense, BM25, Hybrid, and Reranked Retrieval
+
+We upgraded retrieval evaluation to compare multiple retrieval strategies side by side.
+
+Compared strategies:
+- dense
+- BM25
+- hybrid
+- reranked hybrid
+
+Reason:
+- Shows whether hybrid retrieval improves over dense-only search
+- Shows whether reranking improves precision
+- Produces measurable RAG quality metrics for iteration
+- Helps justify architectural decisions in interviews and documentation
+
+Current metrics:
+- Hit@K
+- Precision@K
+
+Current limitation:
+- Relevance is still section-based, not manually labeled chunk-level relevance
