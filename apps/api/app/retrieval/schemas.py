@@ -32,6 +32,11 @@ class HybridSearchRequest(BaseModel):
     include_references: bool = False
 
 
+class RerankSearchRequest(HybridSearchRequest):
+    candidate_k: int = 20
+    rerank_top_k: int = 5
+
+
 class SearchResult(BaseModel):
     score: float
     chunk_id: str
@@ -62,4 +67,12 @@ class HybridSearchResponse(BaseModel):
     top_k: int
     dense_k: int
     bm25_k: int
+    results: List[HybridSearchResult]
+
+
+class RerankSearchResponse(BaseModel):
+    query: str
+    candidate_k: int
+    rerank_top_k: int
+    reranker_model: str
     results: List[HybridSearchResult]

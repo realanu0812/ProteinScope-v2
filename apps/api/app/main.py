@@ -16,6 +16,7 @@ from app.ingestion.pdf_loader import load_pdf
 from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
 from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
+from app.reranking.reranker import CrossEncoderReranker
 from app.retrieval.bm25_index import BM25Index, filter_chunks
 from app.retrieval.hybrid_search import reciprocal_rank_fusion
 from app.retrieval.logger import log_hybrid_search_event, log_search_event
@@ -23,6 +24,8 @@ from app.retrieval.schemas import (
     BM25SearchRequest,
     HybridSearchRequest,
     HybridSearchResponse,
+    RerankSearchRequest,
+    RerankSearchResponse,
     SearchRequest,
     SearchResponse,
 )
@@ -242,4 +245,83 @@ def search_chunks_hybrid(request: HybridSearchRequest):
         dense_k=request.dense_k,
         bm25_k=request.bm25_k,
         results=hybrid_results,
+    )
+
+
+@app.post("/search/rerank", response_model=RerankSearchResponse)
+def search_chunks_rerank(request: RerankSearchRequest):
+    hybrid_request = HybridSearchRequest(
+        query=request.query,
+        chunks_path=request.chunks_path,
+        top_k=request.candidate_k,
+        dense_k=request.dense_k,
+        bm25_k=request.bm25_k,
+        document_id=request.document_id,
+        source_type=request.source_type,
+        trust_level=request.trust_level,
+        section=request.section,
+        include_references=request.include_references,
+    )
+
+    embedding_provider = SentenceTransformerEmbeddingProvider()
+    query_vector = embedding_provider.embed_texts([request.query])[0]
+
+    dense_request = SearchRequest(
+        query=request.query,
+        top_k=request.dense_k,
+        document_id=request.document_id,
+        source_type=request.source_type,
+        trust_level=request.trust_level,
+        section=request.section,
+        include_references=request.include_references,
+    )
+
+    vector_store = QdrantVectorStore()
+    dense_results = vector_store.search(
+        query_vector=query_vector,
+        request=dense_request,
+    )
+
+    chunks = load_chunks_from_file(request.chunks_path)
+    filtered_chunks = filter_chunks(
+        chunks=chunks,
+        document_id=request.document_id,
+        source_type=request.source_type,
+        trust_level=request.trust_level,
+        section=request.section,
+        include_references=request.include_references,
+    )
+
+    bm25_index = BM25Index(filtered_chunks)
+    bm25_results = bm25_index.search(
+        query=request.query,
+        top_k=request.bm25_k,
+    )
+
+    hybrid_candidates = reciprocal_rank_fusion(
+        dense_results=dense_results,
+        bm25_results=bm25_results,
+        top_k=request.candidate_k,
+    )
+
+    reranker = CrossEncoderReranker()
+    reranked_results = reranker.rerank(
+        query=request.query,
+        results=hybrid_candidates,
+        top_k=request.rerank_top_k,
+    )
+
+    log_hybrid_search_event(
+        request=hybrid_request,
+        dense_results=dense_results,
+        bm25_results=bm25_results,
+        hybrid_results=hybrid_candidates,
+    )
+
+    return RerankSearchResponse(
+        query=request.query,
+        candidate_k=request.candidate_k,
+        rerank_top_k=request.rerank_top_k,
+        reranker_model=reranker.model_name(),
+        results=reranked_results,
     )

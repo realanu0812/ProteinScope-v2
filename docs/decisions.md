@@ -699,3 +699,29 @@ Reason:
 Current output:
 
 outputs/retrieval/hybrid_search_logs.jsonl
+
+## Decision 42: Add Cross-Encoder Reranking After Hybrid Retrieval
+
+We added a local cross-encoder reranker after hybrid retrieval.
+
+Current reranker:
+- cross-encoder/ms-marco-MiniLM-L-6-v2
+
+Current flow:
+- dense search
+- BM25 search
+- Reciprocal Rank Fusion
+- top candidate chunks
+- cross-encoder reranking
+- final top-k chunks
+
+Reason:
+- Dense and BM25 retrieval are fast but approximate
+- Reranking compares query and chunk text more directly
+- Improves precision before context is passed to the LLM
+- Creates a production-style retrieval pipeline
+
+Current limitation:
+- Cross-encoder reranking adds latency
+- Current reranker is general-purpose, not domain-specific biomedical
+- Later we may compare with BGE rerankers or hosted rerank APIs

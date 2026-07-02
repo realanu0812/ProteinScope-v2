@@ -580,3 +580,44 @@ Build BM25 index
     ↓
 Search filtered chunks
 This keeps BM25 aligned with dense Qdrant filtering during hybrid retrieval.
+
+
+## Hybrid Retrieval Logging
+
+Each `/search/hybrid` call logs:
+
+- query
+- filters
+- dense results
+- BM25 results
+- fused hybrid results
+- dense_rank
+- bm25_rank
+- fusion_score
+
+This makes hybrid retrieval observable and easier to evaluate.
+
+## Reranking Flow
+
+ProteinScope now supports reranking after hybrid retrieval.
+
+Flow:
+
+User Query
+    ↓
+Dense Search
+    ↓
+BM25 Search
+    ↓
+RRF Fusion
+    ↓
+Candidate Chunks
+    ↓
+Cross-Encoder Reranker
+    ↓
+Final Top-k Chunks
+
+Endpoint:
+POST /search/rerank
+
+Reranking improves precision by scoring query-chunk pairs more carefully than approximate retrieval.
