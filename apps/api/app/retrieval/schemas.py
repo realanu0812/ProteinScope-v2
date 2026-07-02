@@ -19,6 +19,19 @@ class BM25SearchRequest(BaseModel):
     top_k: int = 5
 
 
+class HybridSearchRequest(BaseModel):
+    query: str = Field(min_length=1)
+    chunks_path: str
+    top_k: int = 5
+    dense_k: int = 20
+    bm25_k: int = 20
+    document_id: Optional[str] = None
+    source_type: Optional[str] = None
+    trust_level: Optional[str] = None
+    section: Optional[str] = None
+    include_references: bool = False
+
+
 class SearchResult(BaseModel):
     score: float
     chunk_id: str
@@ -32,7 +45,21 @@ class SearchResult(BaseModel):
     text: str
 
 
+class HybridSearchResult(SearchResult):
+    dense_rank: Optional[int] = None
+    bm25_rank: Optional[int] = None
+    fusion_score: float
+
+
 class SearchResponse(BaseModel):
     query: str
     top_k: int
     results: List[SearchResult]
+
+
+class HybridSearchResponse(BaseModel):
+    query: str
+    top_k: int
+    dense_k: int
+    bm25_k: int
+    results: List[HybridSearchResult]

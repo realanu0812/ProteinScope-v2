@@ -646,3 +646,26 @@ Current limitation:
 * BM25 index is built from exported chunk JSON per request
 * This is acceptable for learning/debugging, but not production-efficient
 * Later we will use a persistent keyword index or database-backed full-text search
+
+## Decision 39: Combine Dense and BM25 Retrieval With Reciprocal Rank Fusion
+
+We added hybrid retrieval by combining Qdrant dense search and BM25 keyword search.
+
+Fusion method:
+- Reciprocal Rank Fusion (RRF)
+
+Reason:
+- Dense search captures semantic similarity
+- BM25 captures exact scientific terms, IDs, abbreviations, and dosage values
+- Dense and BM25 scores live on different scales, so direct score addition is unreliable
+- RRF combines ranked lists without needing score normalization
+
+Current endpoint:
+
+```text
+POST /search/hybrid
+Current limitation:
+
+* BM25 index is still loaded from exported chunks JSON per request
+* Later this should move to persistent full-text search or cached indexes
+    EOF

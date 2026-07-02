@@ -544,3 +544,25 @@ BM25 is useful for exact matches such as:
 
 This prepares the system for hybrid retrieval.
 EOF
+## Hybrid Retrieval Flow
+
+Current hybrid retrieval flow:
+
+```text
+User Query
+    ↓
+Dense Search in Qdrant
+    ↓
+BM25 Keyword Search over Chunks
+    ↓
+Reciprocal Rank Fusion
+    ↓
+Top-k Hybrid Results
+Hybrid retrieval improves coverage because:
+
+* dense retrieval finds semantic matches
+* BM25 finds exact keyword matches
+* RRF merges both result sets without score normalization
+
+Current endpoint:
+POST /search/hybrid

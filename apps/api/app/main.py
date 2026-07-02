@@ -17,8 +17,15 @@ from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
 from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
 from app.retrieval.bm25_index import BM25Index
+from app.retrieval.hybrid_search import reciprocal_rank_fusion
 from app.retrieval.logger import log_search_event
-from app.retrieval.schemas import BM25SearchRequest, SearchRequest, SearchResponse
+from app.retrieval.schemas import (
+    BM25SearchRequest,
+    HybridSearchRequest,
+    HybridSearchResponse,
+    SearchRequest,
+    SearchResponse,
+)
 from app.vector_store.qdrant_store import QdrantVectorStore
 
 
@@ -158,6 +165,7 @@ def search_chunks(request: SearchRequest):
 def search_chunks_bm25(request: BM25SearchRequest):
     chunks = load_chunks_from_file(request.chunks_path)
     bm25_index = BM25Index(chunks)
+
     results = bm25_index.search(
         query=request.query,
         top_k=request.top_k,
@@ -167,4 +175,47 @@ def search_chunks_bm25(request: BM25SearchRequest):
         query=request.query,
         top_k=request.top_k,
         results=results,
+    )
+
+
+@app.post("/search/hybrid", response_model=HybridSearchResponse)
+def search_chunks_hybrid(request: HybridSearchRequest):
+    embedding_provider = SentenceTransformerEmbeddingProvider()
+    query_vector = embedding_provider.embed_texts([request.query])[0]
+
+    dense_request = SearchRequest(
+        query=request.query,
+        top_k=request.dense_k,
+        document_id=request.document_id,
+        source_type=request.source_type,
+        trust_level=request.trust_level,
+        section=request.section,
+        include_references=request.include_references,
+    )
+
+    vector_store = QdrantVectorStore()
+    dense_results = vector_store.search(
+        query_vector=query_vector,
+        request=dense_request,
+    )
+
+    chunks = load_chunks_from_file(request.chunks_path)
+    bm25_index = BM25Index(chunks)
+    bm25_results = bm25_index.search(
+        query=request.query,
+        top_k=request.bm25_k,
+    )
+
+    hybrid_results = reciprocal_rank_fusion(
+        dense_results=dense_results,
+        bm25_results=bm25_results,
+        top_k=request.top_k,
+    )
+
+    return HybridSearchResponse(
+        query=request.query,
+        top_k=request.top_k,
+        dense_k=request.dense_k,
+        bm25_k=request.bm25_k,
+        results=hybrid_results,
     )
