@@ -662,13 +662,12 @@ Reason:
 
 Current endpoint:
 
-```text
 POST /search/hybrid
 Current limitation:
 
 * BM25 index is still loaded from exported chunks JSON per request
 * Later this should move to persistent full-text search or cached indexes
-    EOF
+
 
 ## Decision 40: Apply Metadata Filters to BM25 Retrieval
 
@@ -686,3 +685,17 @@ Reason:
 - Prevents references or wrong source types from leaking into hybrid results
 - Prepares the system for source-separated Evidence vs Community retrieval
 - Keeps retrieval behavior consistent across dense and sparse search
+
+## Decision 41: Log Hybrid Retrieval Rankings
+
+We will log dense, BM25, and fused hybrid rankings for every hybrid search.
+
+Reason:
+- Helps compare dense-only vs keyword-only vs hybrid retrieval
+- Makes RRF behavior transparent
+- Helps debug ranking disagreements
+- Prepares for retrieval evaluation and precision@k analysis
+
+Current output:
+
+outputs/retrieval/hybrid_search_logs.jsonl

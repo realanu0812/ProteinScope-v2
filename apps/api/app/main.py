@@ -18,7 +18,7 @@ from app.ingestion.schemas import IngestionResponse
 from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
 from app.retrieval.bm25_index import BM25Index, filter_chunks
 from app.retrieval.hybrid_search import reciprocal_rank_fusion
-from app.retrieval.logger import log_search_event
+from app.retrieval.logger import log_hybrid_search_event, log_search_event
 from app.retrieval.schemas import (
     BM25SearchRequest,
     HybridSearchRequest,
@@ -206,6 +206,7 @@ def search_chunks_hybrid(request: HybridSearchRequest):
     )
 
     chunks = load_chunks_from_file(request.chunks_path)
+
     filtered_chunks = filter_chunks(
         chunks=chunks,
         document_id=request.document_id,
@@ -226,6 +227,13 @@ def search_chunks_hybrid(request: HybridSearchRequest):
         dense_results=dense_results,
         bm25_results=bm25_results,
         top_k=request.top_k,
+    )
+
+    log_hybrid_search_event(
+        request=request,
+        dense_results=dense_results,
+        bm25_results=bm25_results,
+        hybrid_results=hybrid_results,
     )
 
     return HybridSearchResponse(

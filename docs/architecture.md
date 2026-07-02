@@ -548,7 +548,6 @@ EOF
 
 Current hybrid retrieval flow:
 
-```text
 User Query
     ↓
 Dense Search in Qdrant
@@ -573,7 +572,6 @@ BM25 now applies metadata filters before keyword indexing/search.
 
 Flow:
 
-```text
 Load chunks
     ↓
 Apply metadata filters
