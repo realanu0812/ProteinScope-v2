@@ -669,3 +669,20 @@ Current limitation:
 * BM25 index is still loaded from exported chunks JSON per request
 * Later this should move to persistent full-text search or cached indexes
     EOF
+
+## Decision 40: Apply Metadata Filters to BM25 Retrieval
+
+We updated BM25 retrieval to support the same metadata filtering logic used by dense retrieval.
+
+Supported filters:
+- document_id
+- source_type
+- trust_level
+- section
+- include_references
+
+Reason:
+- Hybrid retrieval should not combine filtered dense results with unfiltered BM25 results
+- Prevents references or wrong source types from leaking into hybrid results
+- Prepares the system for source-separated Evidence vs Community retrieval
+- Keeps retrieval behavior consistent across dense and sparse search

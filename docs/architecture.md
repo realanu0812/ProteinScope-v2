@@ -566,3 +566,19 @@ Hybrid retrieval improves coverage because:
 
 Current endpoint:
 POST /search/hybrid
+
+## BM25 Metadata Filtering
+
+BM25 now applies metadata filters before keyword indexing/search.
+
+Flow:
+
+```text
+Load chunks
+    ↓
+Apply metadata filters
+    ↓
+Build BM25 index
+    ↓
+Search filtered chunks
+This keeps BM25 aligned with dense Qdrant filtering during hybrid retrieval.
