@@ -1,0 +1,27 @@
+[
+  {
+    "query": "what methods were used?",
+    "relevant_sections": ["methods"],
+    "notes": "Should retrieve chunks from methods or experimental setup."
+  },
+  {
+    "query": "what were the key results?",
+    "relevant_sections": ["results", "results_discussion"],
+    "notes": "Should retrieve result/findings chunks."
+  },
+  {
+    "query": "what is the main objective of the study?",
+    "relevant_sections": ["abstract", "introduction"],
+    "notes": "Should retrieve abstract or introduction chunks."
+  },
+  {
+    "query": "what limitations are mentioned?",
+    "relevant_sections": ["discussion", "conclusion"],
+    "notes": "Should retrieve discussion/conclusion chunks."
+  },
+  {
+    "query": "what conclusions did the authors make?",
+    "relevant_sections": ["conclusion", "discussion"],
+    "notes": "Should retrieve conclusion or discussion chunks."
+  }
+]

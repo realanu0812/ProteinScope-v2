@@ -621,3 +621,22 @@ Endpoint:
 POST /search/rerank
 
 Reranking improves precision by scoring query-chunk pairs more carefully than approximate retrieval.
+
+
+## Retrieval Evaluation Baseline
+
+ProteinScope starts retrieval evaluation with a small JSON eval set.
+
+Current eval file:
+apps/api/evals/retrieval_eval_set.json
+
+Initial metrics:
+
+* Hit@K
+* Precision@K
+* Recall@K
+
+Current relevance signal:
+retrieved chunk section ∈ relevant_sections
+
+This will later be upgraded to chunk-level golden labels.

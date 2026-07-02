@@ -725,3 +725,17 @@ Current limitation:
 - Cross-encoder reranking adds latency
 - Current reranker is general-purpose, not domain-specific biomedical
 - Later we may compare with BGE rerankers or hosted rerank APIs
+
+## Decision 43: Start Retrieval Evaluation With Section-Based Labels
+
+We will start retrieval evaluation using section-based relevance labels.
+
+Reason:
+- Faster than manually labeling chunk IDs
+- Good enough to compare early dense/BM25/hybrid/reranked retrieval behavior
+- Helps verify that method queries retrieve methods, result queries retrieve results, etc.
+- Creates a baseline before building a more rigorous golden dataset
+
+Current limitation:
+- Section labels are only a weak proxy for relevance
+- Later evaluation should use manually labeled relevant chunk IDs and answer-level metrics
