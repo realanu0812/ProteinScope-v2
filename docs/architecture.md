@@ -640,3 +640,19 @@ Current relevance signal:
 retrieved chunk section ∈ relevant_sections
 
 This will later be upgraded to chunk-level golden labels.
+
+## Retrieval Evaluation Script
+
+Current evaluation runner:
+
+```text
+apps/api/run_retrieval_eval.py
+It evaluates hybrid retrieval using:
+
+* Hit@K
+* Precision@K
+* retrieved sections
+* retrieved chunk indices
+
+Outputs:
+outputs/evals/retrieval_eval_results.json

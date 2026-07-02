@@ -8,7 +8,12 @@ from app.embeddings.provider import EmbeddingProvider
 class SentenceTransformerEmbeddingProvider(EmbeddingProvider):
     def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
         self._model_name = model_name
-        self.model = SentenceTransformer(model_name)
+        try:
+            # Avoid a Hugging Face network request when the model is already cached.
+            self.model = SentenceTransformer(model_name, local_files_only=True)
+        except OSError:
+            # A fresh installation still needs to download the model once.
+            self.model = SentenceTransformer(model_name)
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:
         embeddings = self.model.encode(

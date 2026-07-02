@@ -739,3 +739,17 @@ Reason:
 Current limitation:
 - Section labels are only a weak proxy for relevance
 - Later evaluation should use manually labeled relevant chunk IDs and answer-level metrics
+
+## Decision 44: Add Retrieval Evaluation Script
+
+We added a retrieval evaluation script that computes section-based Hit@K and Precision@K.
+
+Reason:
+- Lets us compare retrieval strategies objectively
+- Creates measurable RAG quality metrics
+- Helps validate hybrid retrieval before generation
+- Prepares for future chunk-level and answer-level evaluation
+
+Current limitation:
+- Uses section labels as proxy relevance
+- Later evaluation should use manually labeled relevant chunk IDs

@@ -31,3 +31,6 @@ apps/api/outputs/embeddings/
 
 # Retrieval logs
 apps/api/outputs/retrieval/
+
+# Evaluation outputs
+apps/api/outputs/evals/
