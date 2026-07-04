@@ -34,3 +34,6 @@ apps/api/outputs/retrieval/
 
 # Evaluation outputs
 apps/api/outputs/evals/
+
+# Environment variables
+apps/api/.env

@@ -11,9 +11,9 @@ from app.chunking.reporter import export_chunk_report
 from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embeddings
 from app.embeddings.reporter import export_embedding_report
 from app.embeddings.sentence_transformer_provider import SentenceTransformerEmbeddingProvider
+from app.generation.groq_provider import GroqGenerationProvider
 from app.generation.prompt_builder import build_grounded_prompt
 from app.generation.schemas import AnswerRequest, AnswerResponse, Citation
-from app.generation.simple_generator import SimpleExtractiveGenerator
 from app.ingestion.exporter import export_ingested_document
 from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
@@ -383,7 +383,7 @@ def answer_question(request: AnswerRequest):
         contexts=hybrid_results,
     )
 
-    generator = SimpleExtractiveGenerator()
+    generator = GroqGenerationProvider()
     answer = generator.generate(prompt)
 
     citations = []

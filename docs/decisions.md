@@ -833,3 +833,20 @@ Reason:
 
 Current limitation:
 - generator is temporary and does not call a real LLM yet
+
+## Decision 49: Add Groq LLM Provider for Grounded Generation
+
+We replaced the temporary extractive generator with a Groq LLM provider.
+
+Reason:
+- Enables real grounded answer generation
+- Keeps generation behind a provider abstraction
+- Allows later swapping between Groq, OpenAI, Gemini, or local models
+- Maintains citation-first prompt structure
+
+Current model:
+- llama-3.3-70b-versatile
+
+Current limitation:
+- No answer-level evaluation yet
+- No automatic faithfulness scoring yet

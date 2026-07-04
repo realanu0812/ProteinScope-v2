@@ -714,3 +714,21 @@ Answer + Citations
 Endpoint:
 POST /answer
 Current generator is a simple placeholder before LLM integration.
+
+## Groq Generation Provider
+
+ProteinScope now supports Groq-based grounded generation.
+
+Flow:
+
+```text
+Question
+    ↓
+Hybrid Retrieval
+    ↓
+Grounded Prompt
+    ↓
+GroqGenerationProvider
+    ↓
+Answer with source citations
+The generation layer uses a provider abstraction so model vendors can be swapped later.

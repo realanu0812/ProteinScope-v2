@@ -8,3 +8,5 @@ numpy
 qdrant-client
 rank-bm25
 requests
+groq
+python-dotenv
