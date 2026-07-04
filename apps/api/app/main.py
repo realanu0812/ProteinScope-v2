@@ -12,6 +12,7 @@ from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embedd
 from app.embeddings.reporter import export_embedding_report
 from app.embeddings.sentence_transformer_provider import SentenceTransformerEmbeddingProvider
 from app.generation.groq_provider import GroqGenerationProvider
+from app.generation.logger import log_answer_event
 from app.generation.prompt_builder import build_grounded_prompt
 from app.generation.schemas import AnswerRequest, AnswerResponse, Citation
 from app.ingestion.exporter import export_ingested_document
@@ -401,9 +402,19 @@ def answer_question(request: AnswerRequest):
             )
         )
 
+    log_answer_event(
+        request=request,
+        answer=answer,
+        generator_model=generator.model_name(),
+        citations=citations,
+        retrieved_context=hybrid_results,
+    )
+
     return AnswerResponse(
         question=request.question,
         answer=answer,
+        generator_model=generator.model_name(),
+        retrieval_strategy="hybrid_dense_bm25_rrf",
         citations=citations,
         retrieved_context=hybrid_results,
     )

@@ -31,5 +31,7 @@ class Citation(BaseModel):
 class AnswerResponse(BaseModel):
     question: str
     answer: str
+    generator_model: str
+    retrieval_strategy: str
     citations: List[Citation]
     retrieved_context: List[HybridSearchResult]

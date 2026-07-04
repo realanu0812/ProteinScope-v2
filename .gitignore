@@ -37,3 +37,6 @@ apps/api/outputs/evals/
 
 # Environment variables
 apps/api/.env
+
+# Generation logs
+apps/api/outputs/generation/

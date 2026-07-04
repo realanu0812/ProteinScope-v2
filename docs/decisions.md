@@ -850,3 +850,28 @@ Current model:
 Current limitation:
 - No answer-level evaluation yet
 - No automatic faithfulness scoring yet
+
+## Decision 50: Log Answer Generation Events
+
+We added generation logging for `/answer`.
+
+Logged fields:
+- timestamp
+- question
+- generator model
+- retrieval strategy
+- retrieval parameters
+- filters
+- answer
+- citations
+- retrieved context preview
+
+Reason:
+- Makes generation observable
+- Helps debug hallucinations and citation issues
+- Supports future answer-level evaluation
+- Provides traceability for generated research answers
+
+Current output:
+
+outputs/generation/answer_logs.jsonl
