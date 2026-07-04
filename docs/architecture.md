@@ -660,7 +660,6 @@ outputs/evals/retrieval_eval_results.json
 
 The retrieval evaluator now compares:
 
-```text
 Dense
 BM25
 Hybrid
@@ -673,3 +672,45 @@ For each strategy, it reports:
 * retrieved chunk indices
 
 This allows us to quantify improvements from hybrid retrieval and reranking.
+
+## Scientific PDF Parsing With GROBID
+
+ProteinScope now uses a production-style scientific parsing strategy.
+
+Flow:
+
+```text
+PDF
+    ↓
+PyMuPDF page extraction
+    ↓
+GROBID TEI XML extraction
+    ↓
+Structured title / author / abstract / sections
+    ↓
+Section blocks for chunking
+    ↓
+PyMuPDF fallback if GROBID fails
+This avoids relying only on regex-based heading detection.
+
+## Grounded Answer Generation
+
+ProteinScope now supports a baseline answer endpoint.
+
+Flow:
+
+```text
+Question
+    ↓
+Hybrid Retrieval
+    ↓
+Top-k Context Chunks
+    ↓
+Grounded Prompt
+    ↓
+Generator
+    ↓
+Answer + Citations
+Endpoint:
+POST /answer
+Current generator is a simple placeholder before LLM integration.

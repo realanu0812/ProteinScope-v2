@@ -1,0 +1,52 @@
+[
+  {
+    "query": "what are the main nutritional and functional characteristics of whey proteins?",
+    "relevant_sections": ["abstract", "introduction", "conclusions"],
+    "notes": "Should retrieve overview chunks about nutritional value and functional properties."
+  },
+  {
+    "query": "what biological functions do beta-lactoglobulin and alpha-lactalbumin have?",
+    "relevant_sections": ["composition_and_biological_functions_of_whey_proteins", "structure_and_biological_functions_of_whey_proteins"],
+    "notes": "Should retrieve chunks discussing beta-lactoglobulin, alpha-lactalbumin, retinol transfer, lactose synthesis, and biological functions."
+  },
+  {
+    "query": "how is bovine milk adapted for infant formula?",
+    "relevant_sections": ["adaptation_of_bovine_milk_for_infant_formula"],
+    "notes": "Should retrieve chunks about changing casein:whey ratio, desalted whey, WPC, minerals, lactose, and fat composition."
+  },
+  {
+    "query": "what differences exist between human milk and bovine milk?",
+    "relevant_sections": ["the_composition_of_human_and_bovine_milks"],
+    "notes": "Should retrieve chunks comparing casein, minerals, lactose, lactoferrin, lysozyme, and whey protein composition."
+  },
+  {
+    "query": "what amino acid issues are important in infant formula?",
+    "relevant_sections": ["amino_acid_composition_of_infant_formula"],
+    "notes": "Should retrieve chunks about cysteine, tryptophan, threonine, and amino acid balance."
+  },
+  {
+    "query": "how does heat treatment affect whey proteins?",
+    "relevant_sections": ["effects_of_heat_treatment_on_behavior_of_whey_proteins"],
+    "notes": "Should retrieve chunks about unfolding, aggregation, denaturation, heating rates, and beta-lactoglobulin."
+  },
+  {
+    "query": "what is the relationship between denaturation and functional properties?",
+    "relevant_sections": ["effects_of_protein_denaturation_on_functional_properties_of_whey_protein_products", "relationship_between_functional_properties_and_protein_functionality_in_food_products"],
+    "notes": "Should retrieve chunks about solubility, denaturation, functional properties, and food product behavior."
+  },
+  {
+    "query": "what are examples of whey protein functionality in food products?",
+    "relevant_sections": ["protein_functionality_in_food_products", "whey_proteins_as_essential_food_ingredients"],
+    "notes": "Should retrieve chunks about meringues, cakes, foaming, emulsifying, gels, and new food structures."
+  },
+  {
+    "query": "what conclusions does the paper make about whey proteins?",
+    "relevant_sections": ["conclusions"],
+    "notes": "Should retrieve conclusion chunks about whey protein availability, infant formula adaptation, and difficulty predicting functionality."
+  },
+  {
+    "query": "why is lactoferrin important in infant formula adaptation?",
+    "relevant_sections": ["the_composition_of_human_and_bovine_milks", "adaptation_of_bovine_milk_for_infant_formula", "composition_and_biological_functions_of_whey_proteins"],
+    "notes": "Should retrieve chunks discussing lactoferrin as a human milk protein and its addition to bovine-milk-based formulas."
+  }
+]

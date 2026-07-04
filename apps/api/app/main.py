@@ -11,10 +11,13 @@ from app.chunking.reporter import export_chunk_report
 from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embeddings
 from app.embeddings.reporter import export_embedding_report
 from app.embeddings.sentence_transformer_provider import SentenceTransformerEmbeddingProvider
+from app.generation.prompt_builder import build_grounded_prompt
+from app.generation.schemas import AnswerRequest, AnswerResponse, Citation
+from app.generation.simple_generator import SimpleExtractiveGenerator
 from app.ingestion.exporter import export_ingested_document
-from app.ingestion.pdf_loader import load_pdf
 from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
+from app.ingestion.scientific_pdf_loader import load_scientific_pdf
 from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
 from app.reranking.reranker import CrossEncoderReranker
 from app.retrieval.bm25_index import BM25Index, filter_chunks
@@ -66,7 +69,7 @@ def ingest_pdf(file: UploadFile = File(...)):
 
         validate_uploaded_pdf(raw_file_path, file.filename)
 
-        ingested_document = load_pdf(
+        ingested_document = load_scientific_pdf(
             file_path=str(raw_file_path),
             filename=file.filename,
             document_id=document_id,
@@ -283,6 +286,7 @@ def search_chunks_rerank(request: RerankSearchRequest):
     )
 
     chunks = load_chunks_from_file(request.chunks_path)
+
     filtered_chunks = filter_chunks(
         chunks=chunks,
         document_id=request.document_id,
@@ -293,6 +297,7 @@ def search_chunks_rerank(request: RerankSearchRequest):
     )
 
     bm25_index = BM25Index(filtered_chunks)
+
     bm25_results = bm25_index.search(
         query=request.query,
         top_k=request.bm25_k,
@@ -305,6 +310,7 @@ def search_chunks_rerank(request: RerankSearchRequest):
     )
 
     reranker = CrossEncoderReranker()
+
     reranked_results = reranker.rerank(
         query=request.query,
         results=hybrid_candidates,
@@ -324,4 +330,80 @@ def search_chunks_rerank(request: RerankSearchRequest):
         rerank_top_k=request.rerank_top_k,
         reranker_model=reranker.model_name(),
         results=reranked_results,
+    )
+
+
+@app.post("/answer", response_model=AnswerResponse)
+def answer_question(request: AnswerRequest):
+    embedding_provider = SentenceTransformerEmbeddingProvider()
+    query_vector = embedding_provider.embed_texts([request.question])[0]
+
+    dense_request = SearchRequest(
+        query=request.question,
+        top_k=request.dense_k,
+        document_id=request.document_id,
+        source_type=request.source_type,
+        trust_level=request.trust_level,
+        section=request.section,
+        include_references=request.include_references,
+    )
+
+    vector_store = QdrantVectorStore()
+    dense_results = vector_store.search(
+        query_vector=query_vector,
+        request=dense_request,
+    )
+
+    chunks = load_chunks_from_file(request.chunks_path)
+
+    filtered_chunks = filter_chunks(
+        chunks=chunks,
+        document_id=request.document_id,
+        source_type=request.source_type,
+        trust_level=request.trust_level,
+        section=request.section,
+        include_references=request.include_references,
+    )
+
+    bm25_index = BM25Index(filtered_chunks)
+
+    bm25_results = bm25_index.search(
+        query=request.question,
+        top_k=request.bm25_k,
+    )
+
+    hybrid_results = reciprocal_rank_fusion(
+        dense_results=dense_results,
+        bm25_results=bm25_results,
+        top_k=request.top_k,
+    )
+
+    prompt = build_grounded_prompt(
+        question=request.question,
+        contexts=hybrid_results,
+    )
+
+    generator = SimpleExtractiveGenerator()
+    answer = generator.generate(prompt)
+
+    citations = []
+
+    for index, result in enumerate(hybrid_results, start=1):
+        citations.append(
+            Citation(
+                citation_id=index,
+                chunk_id=result.chunk_id,
+                document_id=result.document_id,
+                section=result.section,
+                start_page=result.start_page,
+                end_page=result.end_page,
+                text_preview=result.text[:240].replace("\n", " "),
+            )
+        )
+
+    return AnswerResponse(
+        question=request.question,
+        answer=answer,
+        citations=citations,
+        retrieved_context=hybrid_results,
     )

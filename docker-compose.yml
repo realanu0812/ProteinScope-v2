@@ -8,5 +8,12 @@ services:
     volumes:
       - qdrant_storage:/qdrant/storage
 
+  grobid:
+    image: grobid/grobid:0.9.0-crf
+    container_name: proteinscope-grobid
+    init: true
+    ports:
+      - "8070:8070"
+
 volumes:
   qdrant_storage:

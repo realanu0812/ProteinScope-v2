@@ -776,3 +776,60 @@ Current metrics:
 
 Current limitation:
 - Relevance is still section-based, not manually labeled chunk-level relevance
+
+## Decision 46: Use General Heading-Based Section Detection
+
+We replaced paper-specific section detection with a general heading detector.
+
+Current strategy:
+- detect common academic sections such as abstract, introduction, methods, results, discussion, conclusion, and references
+- detect uppercase standalone headings
+- detect title-case standalone headings
+- normalize detected headings into slug-style section names
+
+Reason:
+- avoids hardcoding one paper's headings
+- works across scientific, nutrition, biomedical, and AI papers
+- preserves specific section names while remaining general
+
+Current limitation:
+- rule-based heading detection may still create false positives
+- later Docling/layout-aware parsing can improve heading detection
+
+## Decision 47: Add GROBID as Scientific Paper Parser
+
+We added GROBID as the production-style parser for scholarly PDFs.
+
+Reason:
+- Regex-based section detection failed on multi-line headings and references
+- GROBID is designed for academic paper structure extraction
+- It extracts title, authors, abstract, body sections, and bibliography from scholarly PDFs
+- This gives more reliable section blocks for scientific RAG
+
+Current parser strategy:
+- PyMuPDF extracts page-wise text for inspection and citations
+- GROBID extracts scholarly structure and section blocks
+- PyMuPDF section detection remains as fallback
+
+Current limitation:
+- GROBID does not always provide perfect page ranges, so page ranges are estimated from PyMuPDF text
+
+## Decision 48: Add Grounded Answer Endpoint With Citations
+
+We added a baseline `/answer` endpoint.
+
+Current flow:
+- question
+- hybrid retrieval
+- prompt construction
+- simple extractive generator
+- citation metadata returned
+
+Reason:
+- separates retrieval from generation
+- validates answer API shape before adding LLM providers
+- ensures every answer has citation-ready retrieved context
+- prepares for grounded generation with Groq/OpenAI/Gemini
+
+Current limitation:
+- generator is temporary and does not call a real LLM yet

@@ -1,111 +1,122 @@
 import re
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from .schemas import PageText, SectionBlock
+from app.ingestion.schemas import PageText, SectionBlock
 
 
-SECTION_ALIASES = {
-    "abstract": [
-        "abstract",
-    ],
-    "introduction": [
-        "introduction",
-        "background",
-    ],
-    "methods": [
-        "methods",
-        "methodology",
-        "materials and methods",
-        "experimental procedures",
-        "experimental methods",
-    ],
-    "results": [
-        "results",
-        "findings",
-    ],
-    "discussion": [
-        "discussion",
-    ],
-    "results_discussion": [
-        "results and discussion",
-        "results & discussion",
-    ],
-    "conclusion": [
-        "conclusion",
-        "conclusions",
-        "summary",
-    ],
-    "references": [
-        "references",
-        "bibliography",
-    ],
+COMMON_SECTION_ALIASES = {
+    "abstract": ["abstract"],
+    "introduction": ["introduction", "background"],
+    "methods": ["methods", "methodology", "materials and methods", "experimental methods"],
+    "results": ["results", "findings"],
+    "discussion": ["discussion"],
+    "results_discussion": ["results and discussion", "results & discussion"],
+    "conclusion": ["conclusion", "conclusions", "summary"],
+    "references": ["references", "bibliography"],
 }
 
 
+IGNORE_PREFIXES = (
+    "figure",
+    "fig.",
+    "table",
+    "journal",
+    "received",
+    "accepted",
+    "copyright",
+)
+
+
+def slugify_heading(text: str) -> str:
+    text = text.lower().strip()
+    text = re.sub(r"[^a-z0-9α-ωΑ-Ω]+", "_", text)
+    text = re.sub(r"_+", "_", text)
+    return text.strip("_")
+
+
 def normalize_heading(line: str) -> str:
-    line = line.strip().lower()
+    line = line.strip()
 
-    # Handles:
-    # 1 Introduction
-    # 1. Introduction
-    # 2.1 Materials and Methods
-    line = re.sub(r"^\d+(\.\d+)*\.?\s+", "", line)
+    line = line.replace("ˆ", "")
+    line = line.replace("β", "beta")
+    line = line.replace("α", "alpha")
+    line = line.replace("￾", "")
 
-    # Remove trailing punctuation
-    line = re.sub(r"[:.\-–—]+$", "", line)
-
-    # Normalize internal spaces
     line = re.sub(r"\s+", " ", line)
+    line = re.sub(r"^\d+(\.\d+)*\.?\s+", "", line)
+    line = re.sub(r"[:.\-–—]+$", "", line)
 
     return line.strip()
 
 
-def detect_section_from_line(line: str) -> Optional[str]:
-    normalized = normalize_heading(line)
+def is_likely_heading(line: str) -> bool:
+    raw = line.strip()
+    normalized = normalize_heading(raw)
 
     if not normalized:
-        return None
+        return False
 
-    # Avoid false positives from full sentences
-    if len(normalized.split()) > 6:
-        return None
+    lowered = normalized.lower()
 
-    for section_name, aliases in SECTION_ALIASES.items():
+    if lowered.startswith(IGNORE_PREFIXES):
+        return False
+
+    word_count = len(normalized.split())
+
+    if word_count < 1 or word_count > 14:
+        return False
+
+    if len(normalized) > 110:
+        return False
+
+    if normalized.endswith((".", ",", ";")):
+        return False
+
+    alpha_chars = sum(char.isalpha() for char in normalized)
+
+    if alpha_chars < 4:
+        return False
+
+    uppercase_letters = sum(char.isupper() for char in raw if char.isalpha())
+    total_letters = sum(char.isalpha() for char in raw)
+
+    uppercase_ratio = uppercase_letters / total_letters if total_letters else 0
+
+    is_mostly_uppercase = uppercase_ratio >= 0.75 and word_count >= 2
+
+    words = normalized.split()
+    title_case_words = sum(
+        1 for word in words
+        if word[:1].isupper() and len(word) > 2
+    )
+    is_title_case = word_count >= 2 and title_case_words >= max(1, word_count * 0.6)
+
+    return is_mostly_uppercase or is_title_case
+
+
+def detect_common_section(line: str) -> Optional[str]:
+    normalized = normalize_heading(line).lower()
+
+    for section_name, aliases in COMMON_SECTION_ALIASES.items():
         if normalized in aliases:
             return section_name
 
     return None
 
 
-def find_section_headings(text: str) -> List[Tuple[int, str, str]]:
-    """
-    Finds all section headings in a page.
+def detect_section_from_line(line: str) -> Optional[str]:
+    common_section = detect_common_section(line)
 
-    Returns:
-    (line_index, section_name, original_line)
-    """
+    if common_section:
+        return common_section
 
-    headings = []
-    lines = text.splitlines()
+    if is_likely_heading(line):
+        return slugify_heading(normalize_heading(line))
 
-    for index, line in enumerate(lines):
-        section = detect_section_from_line(line)
-
-        if section:
-            headings.append((index, section, line))
-
-    return headings
+    return None
 
 
 def build_section_blocks(pages: List[PageText]) -> List[SectionBlock]:
-    """
-    Converts page-wise text into section-aware blocks.
-
-    Why this exists:
-    A single page may contain Abstract + Introduction.
-    Page-level section labels are too coarse for scientific RAG.
-    """
-
     blocks: List[SectionBlock] = []
 
     current_section: Optional[str] = None
@@ -142,8 +153,6 @@ def build_section_blocks(pages: List[PageText]) -> List[SectionBlock]:
                 current_section = detected_section
                 current_start_page = page.page_number
                 current_end_page = page.page_number
-
-                # Keep heading line inside block for context
                 current_lines = [line]
             else:
                 if current_start_page is None:
