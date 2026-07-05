@@ -875,3 +875,23 @@ Reason:
 Current output:
 
 outputs/generation/answer_logs.jsonl
+
+## Decision 51: Add Rule-Based Answer Evaluation
+
+We added a basic answer evaluation script.
+
+Current checks:
+- answer is non-empty
+- retrieved context exists
+- answer includes citations like [Source 1]
+- cited source IDs are valid
+
+Reason:
+- catches obvious generation failures
+- validates citation behavior
+- prepares for future LLM-as-judge evaluation
+- creates answer-level observability before production deployment
+
+Current limitation:
+- does not judge factual faithfulness yet
+- does not score completeness or correctness

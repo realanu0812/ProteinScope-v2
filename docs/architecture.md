@@ -679,7 +679,6 @@ ProteinScope now uses a production-style scientific parsing strategy.
 
 Flow:
 
-```text
 PDF
     ↓
 PyMuPDF page extraction
@@ -699,7 +698,6 @@ ProteinScope now supports a baseline answer endpoint.
 
 Flow:
 
-```text
 Question
     ↓
 Hybrid Retrieval
@@ -721,7 +719,6 @@ ProteinScope now supports Groq-based grounded generation.
 
 Flow:
 
-```text
 Question
     ↓
 Hybrid Retrieval
@@ -732,3 +729,35 @@ GroqGenerationProvider
     ↓
 Answer with source citations
 The generation layer uses a provider abstraction so model vendors can be swapped later.
+
+
+## Generation Observability
+
+Each `/answer` request is logged to:
+
+outputs/generation/answer_logs.jsonl
+The response now includes:
+
+* generator_model
+* retrieval_strategy
+* citations
+* retrieved_context
+
+This improves answer traceability and prepares the system for answer evaluation.
+
+cat >> docs/architecture.md <<'EOF'
+
+## Answer Evaluation
+
+ProteinScope now includes a basic answer evaluation runner:
+apps/api/run_answer_eval.py
+
+It evaluates answer logs from:
+outputs/generation/answer_logs.jsonl
+
+Current metrics:
+
+* pass rate
+* citation usage rate
+* citation validity
+* context availability
