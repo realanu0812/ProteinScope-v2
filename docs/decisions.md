@@ -895,3 +895,23 @@ Reason:
 Current limitation:
 - does not judge factual faithfulness yet
 - does not score completeness or correctness
+
+## Decision 52: Add LLM-as-Judge Answer Evaluation
+
+We added optional LLM-as-judge evaluation for generated answers.
+
+Current judge metrics:
+- faithfulness
+- relevance
+- completeness
+- citation_quality
+
+Reason:
+- rule-based checks only validate structure
+- LLM-as-judge helps detect hallucination and weak grounding
+- creates answer-level quality metrics for RAG evaluation
+- prepares for comparing prompts, models, and retrieval strategies
+
+Current limitation:
+- judge scores are model-dependent
+- judge output should be reviewed periodically by humans

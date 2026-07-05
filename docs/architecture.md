@@ -761,3 +761,19 @@ Current metrics:
 * citation usage rate
 * citation validity
 * context availability
+
+## LLM-as-Judge Evaluation
+
+ProteinScope supports optional LLM-as-judge answer evaluation.
+
+Runner:
+
+apps/api/run_answer_eval.py --use-llm-judge
+Outputs:
+outputs/evals/answer_judge_results.json
+Current metrics:
+
+* faithfulness
+* relevance
+* completeness
+* citation_quality
