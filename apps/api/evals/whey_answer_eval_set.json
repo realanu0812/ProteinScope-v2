@@ -1,0 +1,51 @@
+[
+  {
+    "question": "What are the main nutritional and functional characteristics of whey proteins?",
+    "expected_topics": [
+      "high nutritional value",
+      "functional properties",
+      "food ingredients",
+      "infant formula or health foods"
+    ]
+  },
+  {
+    "question": "How does heat treatment affect whey proteins?",
+    "expected_topics": [
+      "unfolding",
+      "aggregation",
+      "denaturation",
+      "beta-lactoglobulin",
+      "heating rate"
+    ]
+  },
+  {
+    "question": "How is bovine milk adapted for infant formula?",
+    "expected_topics": [
+      "casein to whey ratio",
+      "desalted whey or WPC",
+      "minerals",
+      "lactose",
+      "fat composition"
+    ]
+  },
+  {
+    "question": "Why is lactoferrin important in infant formula adaptation?",
+    "expected_topics": [
+      "human milk",
+      "bovine milk",
+      "lactoferrin",
+      "bioactive protein",
+      "infant formula"
+    ]
+  },
+  {
+    "question": "Why is it difficult to predict whey protein functionality in food products?",
+    "expected_topics": [
+      "model systems",
+      "complex food systems",
+      "processing conditions",
+      "protein interactions",
+      "retroactive explanation"
+    ]
+  }
+]

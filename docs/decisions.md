@@ -915,3 +915,21 @@ Reason:
 Current limitation:
 - judge scores are model-dependent
 - judge output should be reviewed periodically by humans
+
+## Decision 53: Add Expected Topic Coverage Evaluation
+
+We added expected-topic coverage scoring for batch answer evaluation.
+
+Metric:
+- topic_coverage = matched_expected_topics / total_expected_topics
+
+Reason:
+- Gives a simple answer completeness signal
+- Uses the expected_topics already defined in eval datasets
+- Helps compare prompt, retrieval, and model changes
+- Complements LLM-as-judge scoring
+
+Current limitation:
+- Matching is keyword-based
+- Synonyms and paraphrases may be missed
+- Later this can be upgraded with semantic matching or LLM-based topic coverage

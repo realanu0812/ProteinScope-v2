@@ -777,3 +777,18 @@ Current metrics:
 * relevance
 * completeness
 * citation_quality
+
+## Expected Topic Coverage
+
+Batch answer evaluation now computes topic coverage.
+
+For each answer:
+
+expected_topics
+    ↓
+keyword matching against answer
+    ↓
+matched topics / missing topics
+    ↓
+topic_coverage score
+This gives a measurable completeness metric for answer generation.
