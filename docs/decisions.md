@@ -974,3 +974,25 @@ Reason:
 Current limitation:
 - cache is per-process
 - multi-worker deployment will load one copy per worker
+
+## Decision 56: Cache BM25 Indexes by Chunk File and Filters
+
+We added BM25 index caching.
+
+Cache key:
+- chunks_path
+- document_id
+- source_type
+- trust_level
+- section
+- include_references
+
+Reason:
+- avoids rebuilding BM25 index on every request
+- improves repeated query latency for the same document
+- makes hybrid retrieval and answer generation faster
+- supports document-specific search workflows
+
+Current limitation:
+- cache is in-memory and per-process
+- changing a chunk file without restarting may require cache clearing

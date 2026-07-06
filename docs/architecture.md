@@ -827,3 +827,19 @@ Cached services:
 * reranker model
 
 This reduces request latency by avoiding repeated model/client initialization.
+
+## BM25 Index Cache
+
+ProteinScope now caches BM25 indexes.
+
+File:
+
+```text
+apps/api/app/retrieval/bm25_cache.py
+Flow:
+chunks_path + filters
+    ↓
+cached BM25Index
+    ↓
+keyword retrieval
+This reduces latency for repeated BM25, hybrid, rerank, and answer requests.

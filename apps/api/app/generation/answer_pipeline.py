@@ -1,6 +1,5 @@
 from typing import List
 
-from app.chunking.loader import load_chunks_from_file
 from app.dependencies import get_embedding_provider, get_generation_provider, get_vector_store
 from app.generation.logger import log_answer_event
 from app.generation.prompt_builder import build_grounded_prompt
@@ -10,7 +9,7 @@ from app.guardrails.answer_guardrails import (
     validate_generated_answer,
     validate_retrieved_context,
 )
-from app.retrieval.bm25_index import BM25Index, filter_chunks
+from app.retrieval.bm25_cache import get_cached_bm25_index
 from app.retrieval.hybrid_search import reciprocal_rank_fusion
 from app.retrieval.schemas import SearchRequest
 
@@ -54,18 +53,14 @@ def generate_grounded_answer(request: AnswerRequest) -> AnswerResponse:
         request=dense_request,
     )
 
-    chunks = load_chunks_from_file(request.chunks_path)
-
-    filtered_chunks = filter_chunks(
-        chunks=chunks,
+    bm25_index = get_cached_bm25_index(
+        chunks_path=request.chunks_path,
         document_id=request.document_id,
         source_type=request.source_type,
         trust_level=request.trust_level,
         section=request.section,
         include_references=request.include_references,
     )
-
-    bm25_index = BM25Index(filtered_chunks)
 
     bm25_results = bm25_index.search(
         query=request.question,

@@ -6,7 +6,6 @@ from fastapi import FastAPI, File, HTTPException, UploadFile  # type: ignore
 
 from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
-from app.chunking.loader import load_chunks_from_file
 from app.chunking.reporter import export_chunk_report
 from app.dependencies import get_embedding_provider, get_reranker, get_vector_store
 from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embeddings
@@ -18,7 +17,7 @@ from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
 from app.ingestion.scientific_pdf_loader import load_scientific_pdf
 from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
-from app.retrieval.bm25_index import BM25Index, filter_chunks
+from app.retrieval.bm25_cache import get_cached_bm25_index
 from app.retrieval.hybrid_search import reciprocal_rank_fusion
 from app.retrieval.logger import log_hybrid_search_event, log_search_event
 from app.retrieval.schemas import (
@@ -166,14 +165,10 @@ def search_chunks(request: SearchRequest):
 
 @app.post("/search/bm25", response_model=SearchResponse)
 def search_chunks_bm25(request: BM25SearchRequest):
-    chunks = load_chunks_from_file(request.chunks_path)
-
-    filtered_chunks = filter_chunks(
-        chunks=chunks,
+    bm25_index = get_cached_bm25_index(
+        chunks_path=request.chunks_path,
         include_references=False,
     )
-
-    bm25_index = BM25Index(filtered_chunks)
 
     results = bm25_index.search(
         query=request.query,
@@ -208,18 +203,14 @@ def search_chunks_hybrid(request: HybridSearchRequest):
         request=dense_request,
     )
 
-    chunks = load_chunks_from_file(request.chunks_path)
-
-    filtered_chunks = filter_chunks(
-        chunks=chunks,
+    bm25_index = get_cached_bm25_index(
+        chunks_path=request.chunks_path,
         document_id=request.document_id,
         source_type=request.source_type,
         trust_level=request.trust_level,
         section=request.section,
         include_references=request.include_references,
     )
-
-    bm25_index = BM25Index(filtered_chunks)
 
     bm25_results = bm25_index.search(
         query=request.query,
@@ -282,18 +273,14 @@ def search_chunks_rerank(request: RerankSearchRequest):
         request=dense_request,
     )
 
-    chunks = load_chunks_from_file(request.chunks_path)
-
-    filtered_chunks = filter_chunks(
-        chunks=chunks,
+    bm25_index = get_cached_bm25_index(
+        chunks_path=request.chunks_path,
         document_id=request.document_id,
         source_type=request.source_type,
         trust_level=request.trust_level,
         section=request.section,
         include_references=request.include_references,
     )
-
-    bm25_index = BM25Index(filtered_chunks)
 
     bm25_results = bm25_index.search(
         query=request.query,
