@@ -1,11 +1,15 @@
+import os
 from pathlib import Path
 
 import requests
 
 
 class GrobidClient:
-    def __init__(self, base_url: str = "http://localhost:8070"):
-        self.base_url = base_url.rstrip("/")
+    def __init__(self, base_url: str | None = None):
+        self.base_url = (
+            base_url
+            or os.getenv("GROBID_URL", "http://localhost:8070")
+        ).rstrip("/")
 
     def is_alive(self) -> bool:
         try:

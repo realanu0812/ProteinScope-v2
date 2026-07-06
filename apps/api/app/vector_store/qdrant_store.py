@@ -12,8 +12,12 @@ VECTOR_SIZE = 384
 
 
 class QdrantVectorStore:
-    def __init__(self, url: str = "http://localhost:6333"):
-        self.client = QdrantClient(url=url)
+    def __init__(self, url: str | None = None):
+        import os
+
+        self.client = QdrantClient(
+            url=url or os.getenv("QDRANT_URL", "http://localhost:6333")
+        )
 
     def ensure_collection(self) -> None:
         existing_collections = [
