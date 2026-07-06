@@ -811,3 +811,19 @@ Answer Guardrail
     ↓
 Answer + Citations
 Guardrails currently check context availability, weak retrieval confidence, citation presence, and health-advice-style questions.
+
+## Cached Providers
+
+ProteinScope now uses cached provider dependencies.
+
+Current file:
+
+apps/api/app/dependencies.py
+Cached services:
+
+* embedding model
+* vector store client
+* LLM client
+* reranker model
+
+This reduces request latency by avoiding repeated model/client initialization.

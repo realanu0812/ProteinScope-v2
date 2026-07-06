@@ -954,3 +954,23 @@ Current limitation:
 - retrieval confidence threshold is heuristic
 - medical question detection is regex-based
 - later guardrails should include stronger policy and source-aware safety checks
+
+## Decision 55: Cache Model and Service Providers
+
+We added cached provider dependencies using `lru_cache`.
+
+Cached providers:
+- SentenceTransformerEmbeddingProvider
+- QdrantVectorStore
+- GroqGenerationProvider
+- CrossEncoderReranker
+
+Reason:
+- avoids reloading models on every request
+- reduces request latency
+- makes local API behavior closer to production dependency injection
+- prepares for cleaner scaling and deployment
+
+Current limitation:
+- cache is per-process
+- multi-worker deployment will load one copy per worker

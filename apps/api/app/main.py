@@ -8,9 +8,9 @@ from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
 from app.chunking.loader import load_chunks_from_file
 from app.chunking.reporter import export_chunk_report
+from app.dependencies import get_embedding_provider, get_reranker, get_vector_store
 from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embeddings
 from app.embeddings.reporter import export_embedding_report
-from app.embeddings.sentence_transformer_provider import SentenceTransformerEmbeddingProvider
 from app.generation.answer_pipeline import generate_grounded_answer
 from app.generation.schemas import AnswerRequest, AnswerResponse
 from app.ingestion.exporter import export_ingested_document
@@ -18,7 +18,6 @@ from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
 from app.ingestion.scientific_pdf_loader import load_scientific_pdf
 from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
-from app.reranking.reranker import CrossEncoderReranker
 from app.retrieval.bm25_index import BM25Index, filter_chunks
 from app.retrieval.hybrid_search import reciprocal_rank_fusion
 from app.retrieval.logger import log_hybrid_search_event, log_search_event
@@ -31,7 +30,6 @@ from app.retrieval.schemas import (
     SearchRequest,
     SearchResponse,
 )
-from app.vector_store.qdrant_store import QdrantVectorStore
 
 
 app = FastAPI(
@@ -96,7 +94,7 @@ def ingest_pdf(file: UploadFile = File(...)):
             chunks=chunks,
         )
 
-        embedding_provider = SentenceTransformerEmbeddingProvider()
+        embedding_provider = get_embedding_provider()
 
         embedded_chunks = create_chunk_embeddings(
             chunks=chunks,
@@ -113,7 +111,7 @@ def ingest_pdf(file: UploadFile = File(...)):
             embeddings=embedded_chunks,
         )
 
-        vector_store = QdrantVectorStore()
+        vector_store = get_vector_store()
         indexed_count = vector_store.upsert_embeddings(embedded_chunks)
 
         return IngestionResponse(
@@ -145,10 +143,10 @@ def ingest_pdf(file: UploadFile = File(...)):
 
 @app.post("/search", response_model=SearchResponse)
 def search_chunks(request: SearchRequest):
-    embedding_provider = SentenceTransformerEmbeddingProvider()
+    embedding_provider = get_embedding_provider()
     query_vector = embedding_provider.embed_texts([request.query])[0]
 
-    vector_store = QdrantVectorStore()
+    vector_store = get_vector_store()
     results = vector_store.search(
         query_vector=query_vector,
         request=request,
@@ -191,7 +189,7 @@ def search_chunks_bm25(request: BM25SearchRequest):
 
 @app.post("/search/hybrid", response_model=HybridSearchResponse)
 def search_chunks_hybrid(request: HybridSearchRequest):
-    embedding_provider = SentenceTransformerEmbeddingProvider()
+    embedding_provider = get_embedding_provider()
     query_vector = embedding_provider.embed_texts([request.query])[0]
 
     dense_request = SearchRequest(
@@ -204,7 +202,7 @@ def search_chunks_hybrid(request: HybridSearchRequest):
         include_references=request.include_references,
     )
 
-    vector_store = QdrantVectorStore()
+    vector_store = get_vector_store()
     dense_results = vector_store.search(
         query_vector=query_vector,
         request=dense_request,
@@ -265,7 +263,7 @@ def search_chunks_rerank(request: RerankSearchRequest):
         include_references=request.include_references,
     )
 
-    embedding_provider = SentenceTransformerEmbeddingProvider()
+    embedding_provider = get_embedding_provider()
     query_vector = embedding_provider.embed_texts([request.query])[0]
 
     dense_request = SearchRequest(
@@ -278,7 +276,7 @@ def search_chunks_rerank(request: RerankSearchRequest):
         include_references=request.include_references,
     )
 
-    vector_store = QdrantVectorStore()
+    vector_store = get_vector_store()
     dense_results = vector_store.search(
         query_vector=query_vector,
         request=dense_request,
@@ -308,7 +306,7 @@ def search_chunks_rerank(request: RerankSearchRequest):
         top_k=request.candidate_k,
     )
 
-    reranker = CrossEncoderReranker()
+    reranker = get_reranker()
 
     reranked_results = reranker.rerank(
         query=request.query,

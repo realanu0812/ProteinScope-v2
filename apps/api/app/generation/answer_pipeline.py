@@ -1,8 +1,7 @@
 from typing import List
 
 from app.chunking.loader import load_chunks_from_file
-from app.embeddings.sentence_transformer_provider import SentenceTransformerEmbeddingProvider
-from app.generation.groq_provider import GroqGenerationProvider
+from app.dependencies import get_embedding_provider, get_generation_provider, get_vector_store
 from app.generation.logger import log_answer_event
 from app.generation.prompt_builder import build_grounded_prompt
 from app.generation.schemas import AnswerRequest, AnswerResponse, Citation
@@ -14,7 +13,6 @@ from app.guardrails.answer_guardrails import (
 from app.retrieval.bm25_index import BM25Index, filter_chunks
 from app.retrieval.hybrid_search import reciprocal_rank_fusion
 from app.retrieval.schemas import SearchRequest
-from app.vector_store.qdrant_store import QdrantVectorStore
 
 
 def build_citations(results) -> List[Citation]:
@@ -37,7 +35,7 @@ def build_citations(results) -> List[Citation]:
 
 
 def generate_grounded_answer(request: AnswerRequest) -> AnswerResponse:
-    embedding_provider = SentenceTransformerEmbeddingProvider()
+    embedding_provider = get_embedding_provider()
     query_vector = embedding_provider.embed_texts([request.question])[0]
 
     dense_request = SearchRequest(
@@ -50,7 +48,7 @@ def generate_grounded_answer(request: AnswerRequest) -> AnswerResponse:
         include_references=request.include_references,
     )
 
-    vector_store = QdrantVectorStore()
+    vector_store = get_vector_store()
     dense_results = vector_store.search(
         query_vector=query_vector,
         request=dense_request,
@@ -86,7 +84,7 @@ def generate_grounded_answer(request: AnswerRequest) -> AnswerResponse:
         hybrid_results
     )
 
-    generator = GroqGenerationProvider()
+    generator = get_generation_provider()
 
     if not context_is_valid:
         answer = (
