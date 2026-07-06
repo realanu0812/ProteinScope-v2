@@ -933,3 +933,24 @@ Current limitation:
 - Matching is keyword-based
 - Synonyms and paraphrases may be missed
 - Later this can be upgraded with semantic matching or LLM-based topic coverage
+
+## Decision 54: Add Answer Guardrails
+
+We added production-style answer guardrails.
+
+Current checks:
+- block answer generation when no context is retrieved
+- block confident answer when retrieval confidence is too low
+- validate that generated answers include citations
+- add medical disclaimer for health-advice-style questions
+
+Reason:
+- reduces hallucination risk
+- prevents unsupported answers
+- improves scientific answer safety
+- prepares for Reddit/community-source separation and medical-advice handling
+
+Current limitation:
+- retrieval confidence threshold is heuristic
+- medical question detection is regex-based
+- later guardrails should include stronger policy and source-aware safety checks

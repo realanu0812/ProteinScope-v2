@@ -792,3 +792,22 @@ matched topics / missing topics
     ↓
 topic_coverage score
 This gives a measurable completeness metric for answer generation.
+
+## Answer Guardrails
+
+ProteinScope now includes guardrails around grounded generation.
+
+Flow:
+
+Question
+    ↓
+Hybrid Retrieval
+    ↓
+Retrieval Guardrail
+    ↓
+Grounded Generation
+    ↓
+Answer Guardrail
+    ↓
+Answer + Citations
+Guardrails currently check context availability, weak retrieval confidence, citation presence, and health-advice-style questions.
