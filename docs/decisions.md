@@ -1016,3 +1016,24 @@ Reason:
 
 Current output:
 outputs/observability/api_latency_logs.jsonl
+
+## Decision 58: Add Latency Summary Reporting
+
+We added a latency summary script that aggregates API latency logs.
+
+Reported metrics:
+- count
+- average latency
+- min latency
+- max latency
+- p50 latency
+- p95 latency
+
+Reason:
+- gives measurable performance benchmarks
+- helps quantify caching improvements
+- supports deployment readiness checks
+- creates resume-ready system performance metrics
+
+Current script:
+apps/api/run_latency_report.py

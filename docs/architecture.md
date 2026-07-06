@@ -855,3 +855,18 @@ Output:
 outputs/observability/api_latency_logs.jsonl
 
 The API also returns an X-Process-Time-ms response header for each request.
+
+
+## Latency Reporting
+
+ProteinScope includes a latency report runner:
+
+apps/api/run_latency_report.py
+
+It reads:
+outputs/observability/api_latency_logs.jsonl
+
+and writes:
+outputs/observability/api_latency_summary.json
+
+This allows endpoint-level latency benchmarking.
