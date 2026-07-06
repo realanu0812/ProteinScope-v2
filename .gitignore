@@ -40,3 +40,6 @@ apps/api/.env
 
 # Generation logs
 apps/api/outputs/generation/
+
+# Observability logs
+apps/api/outputs/observability/

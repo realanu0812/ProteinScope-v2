@@ -996,3 +996,23 @@ Reason:
 Current limitation:
 - cache is in-memory and per-process
 - changing a chunk file without restarting may require cache clearing
+
+## Decision 57: Add API Latency Logging Middleware
+
+We added middleware to log request latency for every API endpoint.
+
+Logged fields:
+- timestamp
+- HTTP method
+- path
+- status code
+- duration_ms
+
+Reason:
+- measures real API performance
+- helps identify slow endpoints
+- validates impact of provider and BM25 caching
+- supports future latency optimization and deployment benchmarking
+
+Current output:
+outputs/observability/api_latency_logs.jsonl

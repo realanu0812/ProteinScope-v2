@@ -834,7 +834,6 @@ ProteinScope now caches BM25 indexes.
 
 File:
 
-```text
 apps/api/app/retrieval/bm25_cache.py
 Flow:
 chunks_path + filters
@@ -843,3 +842,16 @@ cached BM25Index
     ↓
 keyword retrieval
 This reduces latency for repeated BM25, hybrid, rerank, and answer requests.
+
+
+## API Latency Observability
+
+ProteinScope now logs API request latency.
+
+Middleware:
+apps/api/app/observability/latency_logger.py
+
+Output:
+outputs/observability/api_latency_logs.jsonl
+
+The API also returns an X-Process-Time-ms response header for each request.

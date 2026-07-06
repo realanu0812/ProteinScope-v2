@@ -17,6 +17,7 @@ from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
 from app.ingestion.scientific_pdf_loader import load_scientific_pdf
 from app.ingestion.validator import validate_pdf_filename, validate_uploaded_pdf
+from app.observability.latency_logger import LatencyLoggingMiddleware
 from app.retrieval.bm25_cache import get_cached_bm25_index
 from app.retrieval.hybrid_search import reciprocal_rank_fusion
 from app.retrieval.logger import log_hybrid_search_event, log_search_event
@@ -36,6 +37,8 @@ app = FastAPI(
     description="Backend API for source-aware scientific RAG ingestion.",
     version="0.1.0",
 )
+
+app.add_middleware(LatencyLoggingMiddleware)
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
