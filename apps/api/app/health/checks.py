@@ -1,5 +1,4 @@
-import os
-
+from app.config import get_config
 from app.ingestion.grobid_client import GrobidClient
 from app.vector_store.qdrant_store import QdrantVectorStore
 
@@ -37,18 +36,17 @@ def check_grobid() -> dict:
 
 
 def check_llm_config() -> dict:
-    api_key = os.getenv("GROQ_API_KEY")
-    model = os.getenv("GROQ_MODEL")
+    config = get_config()
 
-    if api_key and model:
+    if config.groq_api_key and config.groq_model:
         return {
             "status": "ok",
-            "message": f"Groq configured with model: {model}",
+            "message": f"Groq configured with model: {config.groq_model}",
         }
 
     return {
         "status": "warning",
-        "message": "GROQ_API_KEY or GROQ_MODEL is missing",
+        "message": "GROQ_API_KEY is missing. /answer will not work until configured.",
     }
 
 

@@ -884,3 +884,17 @@ The /health endpoint checks:
 * Groq LLM configuration
 
 This improves deployment observability.
+
+## Runtime Configuration
+
+ProteinScope now uses a central config module:
+
+apps/api/app/config.py
+It controls:
+
+* Qdrant URL
+* GROBID URL
+* Groq API key
+* Groq model
+
+This keeps local and Docker deployments consistent.

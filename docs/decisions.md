@@ -1076,3 +1076,23 @@ Reason:
 - improves recruiter/interviewer demo readiness
 - documents deployment assumptions
 - prepares for cloud deployment later
+
+## Decision 61: Centralize Runtime Configuration
+
+We added a central config module for runtime environment variables.
+
+Config values:
+- QDRANT_URL
+- GROBID_URL
+- GROQ_API_KEY
+- GROQ_MODEL
+
+Reason:
+- avoids scattered environment variable access
+- makes Docker and local development consistent
+- improves deployment clarity
+- allows answer generation config to fail clearly when missing
+
+Current behavior:
+- ingestion/search can run without GROQ_API_KEY
+- /answer requires GROQ_API_KEY

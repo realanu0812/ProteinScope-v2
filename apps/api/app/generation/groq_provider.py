@@ -1,22 +1,17 @@
-import os
-
-from dotenv import load_dotenv
 from groq import Groq
 
+from app.config import get_config, validate_generation_config
 from app.generation.provider import GenerationProvider
 
 
 class GroqGenerationProvider(GenerationProvider):
     def __init__(self):
-        load_dotenv()
+        validate_generation_config()
 
-        api_key = os.getenv("GROQ_API_KEY")
+        config = get_config()
 
-        if not api_key:
-            raise ValueError("GROQ_API_KEY is missing. Add it to apps/api/.env")
-
-        self.client = Groq(api_key=api_key)
-        self._model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+        self.client = Groq(api_key=config.groq_api_key)
+        self._model_name = config.groq_model
 
     def model_name(self) -> str:
         return self._model_name

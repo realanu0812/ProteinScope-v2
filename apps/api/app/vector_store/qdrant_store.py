@@ -1,10 +1,11 @@
 from typing import List
 
-from qdrant_client import QdrantClient # type: ignore
-from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, PointStruct, VectorParams # type: ignore
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, PointStruct, VectorParams
 
-from ..embeddings.schemas import ChunkEmbedding
-from ..retrieval.schemas import SearchResult, SearchRequest
+from app.config import get_config
+from app.embeddings.schemas import ChunkEmbedding
+from app.retrieval.schemas import SearchRequest, SearchResult
 
 
 COLLECTION_NAME = "proteinscope_chunks"
@@ -13,11 +14,8 @@ VECTOR_SIZE = 384
 
 class QdrantVectorStore:
     def __init__(self, url: str | None = None):
-        import os
-
-        self.client = QdrantClient(
-            url=url or os.getenv("QDRANT_URL", "http://localhost:6333")
-        )
+        config = get_config()
+        self.client = QdrantClient(url=url or config.qdrant_url)
 
     def ensure_collection(self) -> None:
         existing_collections = [
@@ -41,7 +39,7 @@ class QdrantVectorStore:
 
         points = []
 
-        for index, item in enumerate(embeddings):
+        for item in embeddings:
             points.append(
                 PointStruct(
                     id=item.chunk_id,
@@ -69,88 +67,88 @@ class QdrantVectorStore:
         return len(points)
 
     def search(
-      self,
-      query_vector: List[float],
-      request: SearchRequest,
-  ) -> List[SearchResult]:
-      self.ensure_collection()
+        self,
+        query_vector: List[float],
+        request: SearchRequest,
+    ) -> List[SearchResult]:
+        self.ensure_collection()
 
-      must_conditions = []
-      must_not_conditions = []
+        must_conditions = []
+        must_not_conditions = []
 
-      if request.document_id:
-          must_conditions.append(
-              FieldCondition(
-                  key="document_id",
-                  match=MatchValue(value=request.document_id),
-              )
-          )
+        if request.document_id:
+            must_conditions.append(
+                FieldCondition(
+                    key="document_id",
+                    match=MatchValue(value=request.document_id),
+                )
+            )
 
-      if request.source_type:
-          must_conditions.append(
-              FieldCondition(
-                  key="source_type",
-                  match=MatchValue(value=request.source_type),
-              )
-          )
+        if request.source_type:
+            must_conditions.append(
+                FieldCondition(
+                    key="source_type",
+                    match=MatchValue(value=request.source_type),
+                )
+            )
 
-      if request.trust_level:
-          must_conditions.append(
-              FieldCondition(
-                  key="trust_level",
-                  match=MatchValue(value=request.trust_level),
-              )
-          )
+        if request.trust_level:
+            must_conditions.append(
+                FieldCondition(
+                    key="trust_level",
+                    match=MatchValue(value=request.trust_level),
+                )
+            )
 
-      if request.section:
-          must_conditions.append(
-              FieldCondition(
-                  key="section",
-                  match=MatchValue(value=request.section),
-              )
-          )
+        if request.section:
+            must_conditions.append(
+                FieldCondition(
+                    key="section",
+                    match=MatchValue(value=request.section),
+                )
+            )
 
-      if not request.include_references:
-          must_not_conditions.append(
-              FieldCondition(
-                  key="section",
-                  match=MatchValue(value="references"),
-              )
-          )
+        if not request.include_references:
+            must_not_conditions.append(
+                FieldCondition(
+                    key="section",
+                    match=MatchValue(value="references"),
+                )
+            )
 
-      query_filter = None
+        query_filter = None
 
-      if must_conditions or must_not_conditions:
-          query_filter = Filter(
-              must=must_conditions or None,
-              must_not=must_not_conditions or None,
-          )
+        if must_conditions or must_not_conditions:
+            query_filter = Filter(
+                must=must_conditions or None,
+                must_not=must_not_conditions or None,
+            )
 
-      response = self.client.query_points(
-          collection_name=COLLECTION_NAME,
-          query=query_vector,
-          query_filter=query_filter,
-          limit=request.top_k,
-      )
+        results = self.client.search(
+            collection_name=COLLECTION_NAME,
+            query_vector=query_vector,
+            query_filter=query_filter,
+            limit=request.top_k,
+        )
 
-      search_results = []
+        search_results = []
 
-      for result in response.points:
-          payload = result.payload or {}
+        for result in results:
+            payload = result.payload or {}
 
-          search_results.append(
-              SearchResult(
-                  score=result.score,
-                  chunk_id=payload.get("chunk_id"),
-                  document_id=payload.get("document_id"),
-                  chunk_index=payload.get("chunk_index"),
-                  source_type=payload.get("source_type"),
-                  trust_level=payload.get("trust_level"),
-                  section=payload.get("section"),
-                  start_page=payload.get("start_page"),
-                  end_page=payload.get("end_page"),
-                  text=payload.get("text"),
-              )
-          )
+            search_results.append(
+                SearchResult(
+                    score=result.score,
+                    chunk_id=payload.get("chunk_id"),
+                    document_id=payload.get("document_id"),
+                    chunk_index=payload.get("chunk_index"),
+                    source_type=payload.get("source_type"),
+                    trust_level=payload.get("trust_level"),
+                    section=payload.get("section"),
+                    start_page=payload.get("start_page"),
+                    end_page=payload.get("end_page"),
+                    text=payload.get("text"),
+                )
+            )
 
-      return search_results
+        return search_results
