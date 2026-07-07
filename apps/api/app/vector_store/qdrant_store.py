@@ -124,16 +124,16 @@ class QdrantVectorStore:
                 must_not=must_not_conditions or None,
             )
 
-        results = self.client.search(
+        response = self.client.query_points(
             collection_name=COLLECTION_NAME,
-            query_vector=query_vector,
+            query=query_vector,
             query_filter=query_filter,
             limit=request.top_k,
         )
 
         search_results = []
 
-        for result in results:
+        for result in response.points:
             payload = result.payload or {}
 
             search_results.append(

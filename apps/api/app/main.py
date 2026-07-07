@@ -3,6 +3,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
@@ -32,6 +33,12 @@ from app.retrieval.schemas import (
     SearchResponse,
 )
 
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://192.168.1.38:3000",
+]
+
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -39,6 +46,13 @@ app = FastAPI(
     version="0.1.0",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.add_middleware(LatencyLoggingMiddleware)
 
 UPLOAD_DIR = Path("uploads")
