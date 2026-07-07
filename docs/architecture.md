@@ -898,3 +898,13 @@ It controls:
 * Groq model
 
 This keeps local and Docker deployments consistent.
+
+## Document Registry
+
+ProteinScope now maintains a lightweight JSON document registry.
+
+Endpoints:
+
+GET /documents
+GET /documents/{document_id}
+This enables frontend document selection and prepares for future database-backed document management.

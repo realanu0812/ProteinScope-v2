@@ -3,12 +3,17 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile  # type: ignore
-from fastapi.middleware.cors import CORSMiddleware
 
 from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
 from app.chunking.reporter import export_chunk_report
 from app.dependencies import get_embedding_provider, get_reranker, get_vector_store
+from app.documents.registry import (
+    build_document_record,
+    get_document_record,
+    load_document_registry,
+    upsert_document_record,
+)
 from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embeddings
 from app.embeddings.reporter import export_embedding_report
 from app.generation.answer_pipeline import generate_grounded_answer
@@ -33,12 +38,6 @@ from app.retrieval.schemas import (
     SearchResponse,
 )
 
-ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://192.168.1.38:3000",
-]
-
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -46,13 +45,6 @@ app = FastAPI(
     version="0.1.0",
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 app.add_middleware(LatencyLoggingMiddleware)
 
 UPLOAD_DIR = Path("uploads")
@@ -70,6 +62,23 @@ def health_check():
 @app.get("/health")
 def detailed_health_check():
     return run_health_checks()
+
+
+@app.get("/documents")
+def list_documents():
+    return {
+        "documents": load_document_registry(),
+    }
+
+
+@app.get("/documents/{document_id}")
+def get_document(document_id: str):
+    record = get_document_record(document_id)
+
+    if not record:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    return record
 
 
 @app.post("/ingest/pdf", response_model=IngestionResponse)
@@ -135,6 +144,19 @@ def ingest_pdf(file: UploadFile = File(...)):
 
         vector_store = get_vector_store()
         indexed_count = vector_store.upsert_embeddings(embedded_chunks)
+
+        upsert_document_record(
+            build_document_record(
+                document_id=ingested_document.metadata.document_id,
+                title=ingested_document.metadata.title,
+                filename=file.filename,
+                chunks_path=chunks_path,
+                chunk_count=len(chunks),
+                embedding_count=len(embedded_chunks),
+                indexed_count=indexed_count,
+                parser_name=ingested_document.metadata.parser_name,
+            )
+        )
 
         return IngestionResponse(
             status="completed",

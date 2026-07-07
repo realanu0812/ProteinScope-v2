@@ -43,3 +43,6 @@ apps/api/outputs/generation/
 
 # Observability logs
 apps/api/outputs/observability/
+
+# Document registry
+apps/api/outputs/documents/

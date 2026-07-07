@@ -1096,3 +1096,34 @@ Reason:
 Current behavior:
 - ingestion/search can run without GROQ_API_KEY
 - /answer requires GROQ_API_KEY
+
+## Decision 62: Add Lightweight Document Registry
+
+We added a lightweight document registry stored in JSON.
+
+Current registry path:
+
+outputs/documents/document_registry.json
+Stored metadata:
+
+* document_id
+* title
+* filename
+* chunks_path
+* chunk_count
+* embedding_count
+* indexed_count
+* parser_name
+* created_at
+
+Reason:
+
+* frontend needs a document list beyond localStorage
+* supports document-aware question answering
+* prepares for auth and user-specific document management
+* can later be replaced by PostgreSQL
+
+Current endpoints:
+
+* GET /documents
+* GET /documents/{document_id}
