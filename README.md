@@ -143,3 +143,15 @@ apps/api/outputs/evals/
 apps/api/outputs/observability/
 These are ignored by git.
 
+
+### Environment file template
+
+A sample environment file is provided at:
+
+apps/api/.env.example
+For local development:
+cp apps/api/.env.example apps/api/.env
+Then add your actual GROQ_API_KEY.
+
+When running through Docker Compose, service URLs are automatically overridden by compose environment variables.
+
