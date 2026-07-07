@@ -870,3 +870,17 @@ and writes:
 outputs/observability/api_latency_summary.json
 
 This allows endpoint-level latency benchmarking.
+
+## Health Checks
+
+ProteinScope exposes:
+
+GET /
+GET /health
+The /health endpoint checks:
+
+* Qdrant
+* GROBID
+* Groq LLM configuration
+
+This improves deployment observability.

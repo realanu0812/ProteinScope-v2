@@ -1037,3 +1037,21 @@ Reason:
 
 Current script:
 apps/api/run_latency_report.py
+
+## Decision 59: Add Deployment Health Checks
+
+We added a `/health` endpoint for production readiness.
+
+Checks:
+- Qdrant connectivity
+- GROBID connectivity
+- Groq LLM configuration
+
+Reason:
+- helps debug Docker and deployment issues
+- makes the API easier to monitor
+- separates simple API health from dependency health
+- prepares for cloud deployment readiness checks
+
+Current endpoint:
+GET /health

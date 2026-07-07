@@ -12,6 +12,7 @@ from app.embeddings.exporter import create_chunk_embeddings, export_chunk_embedd
 from app.embeddings.reporter import export_embedding_report
 from app.generation.answer_pipeline import generate_grounded_answer
 from app.generation.schemas import AnswerRequest, AnswerResponse
+from app.health.checks import run_health_checks
 from app.ingestion.exporter import export_ingested_document
 from app.ingestion.reporter import export_ingestion_report
 from app.ingestion.schemas import IngestionResponse
@@ -50,6 +51,11 @@ def health_check():
         "status": "ok",
         "message": "ProteinScope v2 API is running",
     }
+
+
+@app.get("/health")
+def detailed_health_check():
+    return run_health_checks()
 
 
 @app.post("/ingest/pdf", response_model=IngestionResponse)
