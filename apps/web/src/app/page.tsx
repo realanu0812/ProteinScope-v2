@@ -39,8 +39,16 @@ type AnswerResponse = {
   citations: Citation[];
 };
 
+type SavedDocument = {
+  documentId: string;
+  chunksPath: string;
+  title?: string;
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+const SAVED_DOCUMENT_KEY = "proteinscope_latest_document";
 
 async function readJsonResponse<T>(response: Response): Promise<T> {
   const data = await response.json();
@@ -66,6 +74,7 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [chunksPath, setChunksPath] = useState("");
   const [documentId, setDocumentId] = useState("");
+  const [documentTitle, setDocumentTitle] = useState("");
   const [question, setQuestion] = useState("");
   const [ingestion, setIngestion] = useState<IngestionResponse | null>(null);
   const [answer, setAnswer] = useState<AnswerResponse | null>(null);
@@ -86,7 +95,38 @@ export default function Home() {
     }
 
     checkHealth();
+
+    const savedDocumentRaw = window.localStorage.getItem(SAVED_DOCUMENT_KEY);
+
+    if (savedDocumentRaw) {
+      try {
+        const savedDocument = JSON.parse(savedDocumentRaw) as SavedDocument;
+
+        if (savedDocument.documentId && savedDocument.chunksPath) {
+          setDocumentId(savedDocument.documentId);
+          setChunksPath(savedDocument.chunksPath);
+          setDocumentTitle(savedDocument.title || "");
+        }
+      } catch {
+        window.localStorage.removeItem(SAVED_DOCUMENT_KEY);
+      }
+    }
   }, []);
+
+  function saveLatestDocument(document: SavedDocument) {
+    window.localStorage.setItem(SAVED_DOCUMENT_KEY, JSON.stringify(document));
+  }
+
+  function clearLatestDocument() {
+    window.localStorage.removeItem(SAVED_DOCUMENT_KEY);
+    setChunksPath("");
+    setDocumentId("");
+    setDocumentTitle("");
+    setIngestion(null);
+    setAnswer(null);
+    setUploadError("");
+    setAnswerError("");
+  }
 
   async function uploadPdf() {
     if (!file) return;
@@ -113,13 +153,26 @@ export default function Home() {
 
       setIngestion(data);
 
-      if (data.chunks_path) {
-        setChunksPath(data.chunks_path);
+      const parsedChunksPath = data.chunks_path || "";
+      const parsedDocumentId = data.document?.metadata?.document_id || "";
+      const parsedTitle = data.document?.metadata?.title || file.name;
+
+      if (parsedChunksPath) {
+        setChunksPath(parsedChunksPath);
       }
 
-      const parsedDocumentId = data.document?.metadata?.document_id;
       if (parsedDocumentId) {
         setDocumentId(parsedDocumentId);
+      }
+
+      setDocumentTitle(parsedTitle);
+
+      if (parsedChunksPath && parsedDocumentId) {
+        saveLatestDocument({
+          documentId: parsedDocumentId,
+          chunksPath: parsedChunksPath,
+          title: parsedTitle,
+        });
       }
     } catch (caughtError) {
       setUploadError(
@@ -197,6 +250,29 @@ export default function Home() {
           </p>
         </section>
 
+        {chunksPath && documentId && (
+          <section className="rounded-2xl border border-emerald-900 bg-emerald-950/20 p-4 text-sm text-emerald-100">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-semibold">Active document loaded</p>
+                <p className="mt-1 text-emerald-200/80">
+                  {documentTitle || documentId}
+                </p>
+                <p className="mt-1 break-all text-xs text-emerald-200/60">
+                  {chunksPath}
+                </p>
+              </div>
+
+              <button
+                onClick={clearLatestDocument}
+                className="rounded-lg border border-emerald-800 px-4 py-2 text-xs font-medium text-emerald-100 hover:bg-emerald-900/40"
+              >
+                Clear
+              </button>
+            </div>
+          </section>
+        )}
+
         <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="text-xl font-semibold">1. Upload PDF</h2>
 
@@ -236,6 +312,10 @@ export default function Home() {
               <p>
                 <span className="font-semibold text-zinc-100">Document ID:</span>{" "}
                 {documentId || "N/A"}
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-100">Title:</span>{" "}
+                {documentTitle || "N/A"}
               </p>
               <p>
                 <span className="font-semibold text-zinc-100">Chunks:</span>{" "}
