@@ -1055,3 +1055,24 @@ Reason:
 
 Current endpoint:
 GET /health
+
+## Decision 60: Add Deployment Documentation
+
+We added local deployment instructions for the Docker-based ProteinScope stack.
+
+Documented:
+- environment variables
+- Docker Compose startup
+- API docs
+- health checks
+- ingestion
+- retrieval endpoints
+- answer endpoint
+- evaluation commands
+- observability outputs
+
+Reason:
+- makes the project easier to run
+- improves recruiter/interviewer demo readiness
+- documents deployment assumptions
+- prepares for cloud deployment later
