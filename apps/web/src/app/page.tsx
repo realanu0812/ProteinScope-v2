@@ -6,6 +6,22 @@ type HealthResponse = {
   status: string;
 };
 
+type DocumentRecord = {
+  document_id: string;
+  title?: string | null;
+  filename?: string | null;
+  chunks_path: string;
+  chunk_count: number;
+  embedding_count: number;
+  indexed_count: number;
+  parser_name?: string | null;
+  created_at: string;
+};
+
+type DocumentsResponse = {
+  documents: DocumentRecord[];
+};
+
 type IngestionResponse = {
   status: string;
   message: string;
@@ -69,33 +85,53 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
   return data as T;
 }
 
+function formatDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString();
+}
+
 export default function Home() {
   const [apiHealth, setApiHealth] = useState<string>("checking");
+  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState("");
+
   const [file, setFile] = useState<File | null>(null);
   const [chunksPath, setChunksPath] = useState("");
   const [documentId, setDocumentId] = useState("");
   const [documentTitle, setDocumentTitle] = useState("");
+
   const [question, setQuestion] = useState("");
   const [ingestion, setIngestion] = useState<IngestionResponse | null>(null);
   const [answer, setAnswer] = useState<AnswerResponse | null>(null);
+
   const [uploadError, setUploadError] = useState("");
   const [answerError, setAnswerError] = useState("");
   const [uploadLoading, setUploadLoading] = useState(false);
   const [answerLoading, setAnswerLoading] = useState(false);
 
   useEffect(() => {
-    async function checkHealth() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/health`);
-        const data = await readJsonResponse<HealthResponse>(response);
-        setApiHealth(data.status || "unknown");
-      } catch {
-        setApiHealth("offline");
-      }
-    }
-
     checkHealth();
+    loadSavedDocument();
+    fetchDocuments();
+  }, []);
 
+  async function checkHealth() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/health`);
+      const data = await readJsonResponse<HealthResponse>(response);
+      setApiHealth(data.status || "unknown");
+    } catch {
+      setApiHealth("offline");
+    }
+  }
+
+  function loadSavedDocument() {
     const savedDocumentRaw = window.localStorage.getItem(SAVED_DOCUMENT_KEY);
 
     if (savedDocumentRaw) {
@@ -111,10 +147,51 @@ export default function Home() {
         window.localStorage.removeItem(SAVED_DOCUMENT_KEY);
       }
     }
-  }, []);
+  }
+
+  async function fetchDocuments() {
+    setDocumentsLoading(true);
+    setDocumentsError("");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/documents`);
+      const data = await readJsonResponse<DocumentsResponse>(response);
+
+      const sortedDocuments = [...data.documents].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+
+      setDocuments(sortedDocuments);
+    } catch (caughtError) {
+      setDocumentsError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Could not load documents",
+      );
+    } finally {
+      setDocumentsLoading(false);
+    }
+  }
 
   function saveLatestDocument(document: SavedDocument) {
     window.localStorage.setItem(SAVED_DOCUMENT_KEY, JSON.stringify(document));
+  }
+
+  function selectDocument(record: DocumentRecord) {
+    const title = record.title || record.filename || record.document_id;
+
+    setDocumentId(record.document_id);
+    setChunksPath(record.chunks_path);
+    setDocumentTitle(title);
+    setAnswer(null);
+    setAnswerError("");
+
+    saveLatestDocument({
+      documentId: record.document_id,
+      chunksPath: record.chunks_path,
+      title,
+    });
   }
 
   function clearLatestDocument() {
@@ -174,6 +251,8 @@ export default function Home() {
           title: parsedTitle,
         });
       }
+
+      await fetchDocuments();
     } catch (caughtError) {
       setUploadError(
         caughtError instanceof Error
@@ -272,6 +351,77 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-xl font-semibold">0. Indexed Documents</h2>
+
+            <button
+              onClick={fetchDocuments}
+              disabled={documentsLoading}
+              className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-50"
+            >
+              {documentsLoading ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
+
+          {documentsError && (
+            <div className="mt-4 rounded-xl border border-red-900 bg-red-950/50 p-4 text-sm text-red-200">
+              {documentsError}
+            </div>
+          )}
+
+          {documents.length === 0 && !documentsLoading ? (
+            <p className="mt-4 text-sm text-zinc-400">
+              No indexed documents yet. Upload a PDF below to create one.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {documents.map((record) => {
+                const isActive = record.document_id === documentId;
+
+                return (
+                  <button
+                    key={record.document_id}
+                    onClick={() => selectDocument(record)}
+                    className={`w-full rounded-xl border p-4 text-left text-sm transition ${
+                      isActive
+                        ? "border-emerald-700 bg-emerald-950/30"
+                        : "border-zinc-800 bg-zinc-950 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-semibold text-zinc-100">
+                          {record.title || record.filename || record.document_id}
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          {record.document_id}
+                        </p>
+                      </div>
+
+                      <p className="text-xs text-zinc-500">
+                        {formatDate(record.created_at)}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-400">
+                      <span className="rounded-full bg-zinc-900 px-2 py-1">
+                        chunks: {record.chunk_count}
+                      </span>
+                      <span className="rounded-full bg-zinc-900 px-2 py-1">
+                        indexed: {record.indexed_count}
+                      </span>
+                      <span className="rounded-full bg-zinc-900 px-2 py-1">
+                        parser: {record.parser_name || "unknown"}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="text-xl font-semibold">1. Upload PDF</h2>
