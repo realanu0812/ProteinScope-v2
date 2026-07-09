@@ -67,6 +67,14 @@ const API_BASE_URL =
 
 const SAVED_DOCUMENT_KEY = "proteinscope_latest_document";
 
+const SUGGESTED_QUESTIONS = [
+  "What is the main objective of this paper?",
+  "What methods or experimental setup were used?",
+  "What are the key results or findings?",
+  "What limitations or caveats are mentioned?",
+  "What conclusions do the authors make?",
+];
+
 async function readJsonResponse<T>(response: Response): Promise<T> {
   const data = await response.json();
 
@@ -115,6 +123,7 @@ export default function Home() {
   const [answerError, setAnswerError] = useState("");
   const [uploadLoading, setUploadLoading] = useState(false);
   const [answerLoading, setAnswerLoading] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
 
   useEffect(() => {
     checkHealth();
@@ -187,6 +196,7 @@ export default function Home() {
     setDocumentTitle(title);
     setAnswer(null);
     setAnswerError("");
+    setCopyStatus("");
 
     saveLatestDocument({
       documentId: record.document_id,
@@ -204,6 +214,7 @@ export default function Home() {
     setAnswer(null);
     setUploadError("");
     setAnswerError("");
+    setCopyStatus("");
   }
 
   async function uploadPdf() {
@@ -300,6 +311,25 @@ export default function Home() {
     } finally {
       setAnswerLoading(false);
     }
+  }
+
+  async function copyAnswer() {
+    if (!answer?.answer) return;
+
+    try {
+      await navigator.clipboard.writeText(answer.answer);
+      setCopyStatus("Copied");
+      window.setTimeout(() => setCopyStatus(""), 1500);
+    } catch {
+      setCopyStatus("Copy failed");
+      window.setTimeout(() => setCopyStatus(""), 1500);
+    }
+  }
+
+  function clearAnswer() {
+    setAnswer(null);
+    setAnswerError("");
+    setCopyStatus("");
   }
 
   const healthColor =
@@ -487,6 +517,12 @@ export default function Home() {
         <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="text-xl font-semibold">2. Ask Question</h2>
 
+          {!chunksPath && (
+            <p className="mt-3 rounded-xl border border-yellow-900 bg-yellow-950/30 p-4 text-sm text-yellow-100">
+              Select or upload a document before asking a question.
+            </p>
+          )}
+
           <textarea
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
@@ -494,13 +530,36 @@ export default function Home() {
             className="mt-4 min-h-28 w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-sm"
           />
 
-          <button
-            onClick={askQuestion}
-            disabled={!question || !chunksPath || answerLoading}
-            className="mt-4 rounded-lg bg-white px-5 py-3 font-medium text-zinc-950 disabled:opacity-50"
-          >
-            {answerLoading ? "Thinking..." : "Ask"}
-          </button>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {SUGGESTED_QUESTIONS.map((suggestedQuestion) => (
+              <button
+                key={suggestedQuestion}
+                onClick={() => setQuestion(suggestedQuestion)}
+                className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300 hover:bg-zinc-800"
+              >
+                {suggestedQuestion}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              onClick={askQuestion}
+              disabled={!question || !chunksPath || answerLoading}
+              className="rounded-lg bg-white px-5 py-3 font-medium text-zinc-950 disabled:opacity-50"
+            >
+              {answerLoading ? "Thinking..." : "Ask"}
+            </button>
+
+            {answer && (
+              <button
+                onClick={clearAnswer}
+                className="rounded-lg border border-zinc-700 px-5 py-3 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+              >
+                Clear answer
+              </button>
+            )}
+          </div>
 
           {answerError && (
             <div className="mt-4 rounded-xl border border-red-900 bg-red-950/50 p-4 text-sm text-red-200">
@@ -511,12 +570,24 @@ export default function Home() {
           {answer && (
             <div className="mt-6 space-y-5">
               <div className="rounded-xl bg-zinc-950 p-5">
-                <p className="text-sm text-zinc-500">
-                  Model: {answer.generator_model}
-                </p>
-                <p className="text-sm text-zinc-500">
-                  Retrieval: {answer.retrieval_strategy}
-                </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-sm text-zinc-500">
+                      Model: {answer.generator_model}
+                    </p>
+                    <p className="text-sm text-zinc-500">
+                      Retrieval: {answer.retrieval_strategy}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={copyAnswer}
+                    className="rounded-lg border border-zinc-700 px-4 py-2 text-xs font-medium text-zinc-200 hover:bg-zinc-800"
+                  >
+                    {copyStatus || "Copy answer"}
+                  </button>
+                </div>
+
                 <p className="mt-4 whitespace-pre-wrap leading-7">
                   {answer.answer}
                 </p>
@@ -531,7 +602,7 @@ export default function Home() {
                       key={citation.citation_id}
                       className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-sm"
                     >
-                      <p className="font-semibold">
+                      <p className="font-semibold text-zinc-100">
                         Source {citation.citation_id} ·{" "}
                         {citation.section || "unknown"} · pages{" "}
                         {citation.start_page === citation.end_page

@@ -1129,3 +1129,42 @@ Current endpoints:
 * GET /documents
 * GET /documents/{document_id}
 
+
+# Scope MVP to Single-Document Scientific QA
+
+ProteinScope MVP is scoped as a fast document-grounded scientific QA assistant.
+
+Current behavior:
+- users upload or select one indexed research paper
+- questions are answered against that selected document
+- retrieval is filtered by document_id
+- answers include citations from the selected paper
+
+Reason:
+- keeps the product workflow simple and understandable
+- improves answer grounding and citation clarity
+- avoids noisy retrieval across unrelated papers
+- makes evaluation easier because each benchmark maps to a known document
+- can later expand into multi-document library search using the existing document registry and metadata filters
+
+Future extension:
+- support library-wide search across all indexed papers
+- add document collections/workspaces
+- compare answers across multiple papers
+
+## Decision 63: Add Suggested Questions and Answer Controls
+
+We added frontend answer UX improvements.
+
+Added:
+- suggested question chips
+- copy answer button
+- clear answer button
+- no-document-selected warning
+- clearer citation card styling
+
+Reason:
+- makes the demo easier to use
+- helps users start asking useful paper-level questions faster
+- improves product polish without changing retrieval/generation logic
+- keeps answer interaction lightweight and understandable
