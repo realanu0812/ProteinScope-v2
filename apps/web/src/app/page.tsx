@@ -124,6 +124,7 @@ export default function Home() {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [answerLoading, setAnswerLoading] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
+  const [copiedCitationId, setCopiedCitationId] = useState<number | null>(null);
 
   useEffect(() => {
     checkHealth();
@@ -197,6 +198,7 @@ export default function Home() {
     setAnswer(null);
     setAnswerError("");
     setCopyStatus("");
+    setCopiedCitationId(null);
 
     saveLatestDocument({
       documentId: record.document_id,
@@ -215,6 +217,7 @@ export default function Home() {
     setUploadError("");
     setAnswerError("");
     setCopyStatus("");
+    setCopiedCitationId(null);
   }
 
   async function uploadPdf() {
@@ -326,10 +329,28 @@ export default function Home() {
     }
   }
 
+  async function copyCitationPreview(citation: Citation) {
+    const pages =
+      citation.start_page === citation.end_page
+        ? `${citation.start_page}`
+        : `${citation.start_page}-${citation.end_page}`;
+
+    const citationText = `Source ${citation.citation_id} | Section: ${citation.section || "unknown"} | Pages: ${pages}\n${citation.text_preview}`;
+
+    try {
+      await navigator.clipboard.writeText(citationText);
+      setCopiedCitationId(citation.citation_id);
+      window.setTimeout(() => setCopiedCitationId(null), 1500);
+    } catch {
+      setCopiedCitationId(null);
+    }
+  }
+
   function clearAnswer() {
     setAnswer(null);
     setAnswerError("");
     setCopyStatus("");
+    setCopiedCitationId(null);
   }
 
   const healthColor =
@@ -594,26 +615,62 @@ export default function Home() {
               </div>
 
               <div>
-                <h3 className="font-semibold">Citations</h3>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="font-semibold">Scientific citations</h3>
+                    <p className="mt-1 text-sm text-zinc-500">
+                      Match inline markers like [Source 1] in the answer above.
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-zinc-500">
+                    {answer.citations.length} sources retrieved
+                  </p>
+                </div>
 
                 <div className="mt-3 space-y-3">
-                  {answer.citations.map((citation) => (
-                    <div
-                      key={citation.citation_id}
-                      className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-sm"
-                    >
-                      <p className="font-semibold text-zinc-100">
-                        Source {citation.citation_id} ·{" "}
-                        {citation.section || "unknown"} · pages{" "}
-                        {citation.start_page === citation.end_page
-                          ? citation.start_page
-                          : `${citation.start_page}-${citation.end_page}`}
-                      </p>
-                      <p className="mt-2 text-zinc-400">
-                        {citation.text_preview}
-                      </p>
-                    </div>
-                  ))}
+                  {answer.citations.map((citation) => {
+                    const pages =
+                      citation.start_page === citation.end_page
+                        ? `${citation.start_page}`
+                        : `${citation.start_page}-${citation.end_page}`;
+
+                    return (
+                      <div
+                        key={citation.citation_id}
+                        className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-sm"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-zinc-950">
+                                Source {citation.citation_id}
+                              </span>
+                              <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+                                pages {pages}
+                              </span>
+                              <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+                                {citation.section || "unknown section"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => copyCitationPreview(citation)}
+                            className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-200 hover:bg-zinc-800"
+                          >
+                            {copiedCitationId === citation.citation_id
+                              ? "Copied"
+                              : "Copy source"}
+                          </button>
+                        </div>
+
+                        <p className="mt-3 leading-6 text-zinc-400">
+                          {citation.text_preview}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
