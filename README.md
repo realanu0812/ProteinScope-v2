@@ -176,3 +176,13 @@ Notes
 * API outputs are persisted under apps/api/outputs
 * Uploaded PDFs are persisted under apps/api/uploads
 * Qdrant data is stored in a Docker volume
+
+## Frontend Environment
+
+The frontend reads:
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+Template:
+cp apps/web/.env.example apps/web/.env.local
+For local Docker Compose, use:
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+For deployment, replace it with the deployed backend API URL.

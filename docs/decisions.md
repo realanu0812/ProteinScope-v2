@@ -1198,3 +1198,12 @@ Reason:
 - makes ProteinScope runnable as a full stack locally with one command
 - improves deployment readiness
 - keeps the demo environment reproducible across machines
+
+## Decision 67: Add Frontend Environment Template
+
+We added a frontend environment template for configuring the public API URL.
+
+Reason:
+- keeps local and deployed frontend configuration explicit
+- avoids hardcoding API URLs in source code
+- makes the project easier to run on another machine or cloud host
