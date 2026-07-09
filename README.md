@@ -155,3 +155,24 @@ Then add your actual GROQ_API_KEY.
 
 When running through Docker Compose, service URLs are automatically overridden by compose environment variables.
 
+
+## Running ProteinScope with Docker Compose
+
+### Start all services
+docker compose up --build
+
+This starts:
+
+* Qdrant on http://localhost:6333
+* GROBID on http://localhost:8070
+* API on http://localhost:8000
+* Web app on http://localhost:3000
+
+Stop services
+docker compose down
+
+Notes
+
+* API outputs are persisted under apps/api/outputs
+* Uploaded PDFs are persisted under apps/api/uploads
+* Qdrant data is stored in a Docker volume

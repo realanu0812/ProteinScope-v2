@@ -1183,3 +1183,18 @@ Reason:
 - keeps the MVP focused on fast single-paper scientific QA
 - improves demo clarity
 - avoids unnecessary debug UI for normal users
+
+## Decision 66: Dockerize the Frontend and Compose the Full Stack
+
+We added containerized deployment support for the Next.js frontend and wired it into the project compose stack.
+
+Added:
+- standalone Next.js build output
+- frontend Dockerfile
+- frontend .dockerignore
+- `web` service in docker-compose
+
+Reason:
+- makes ProteinScope runnable as a full stack locally with one command
+- improves deployment readiness
+- keeps the demo environment reproducible across machines
