@@ -47,12 +47,24 @@ type Citation = {
   text_preview: string;
 };
 
+type CommunityDiscussionItem = {
+  source_id: number;
+  platform: string;
+  subreddit: string | null;
+  thread_title: string | null;
+  url: string | null;
+  score: number | null;
+  text_preview: string;
+  trust_level: string;
+};
+
 type AnswerResponse = {
   question: string;
   answer: string;
   generator_model: string;
   retrieval_strategy: string;
   citations: Citation[];
+  community_discussion: CommunityDiscussionItem[];
 };
 
 type SavedDocument = {

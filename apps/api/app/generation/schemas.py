@@ -16,6 +16,7 @@ class AnswerRequest(BaseModel):
     trust_level: Optional[str] = None
     section: Optional[str] = None
     include_references: bool = False
+    include_community_discussion: bool = True
 
 
 class Citation(BaseModel):
@@ -28,10 +29,22 @@ class Citation(BaseModel):
     text_preview: str
 
 
+class CommunityDiscussionItem(BaseModel):
+    source_id: int
+    platform: str = "reddit"
+    subreddit: Optional[str] = None
+    thread_title: Optional[str] = None
+    url: Optional[str] = None
+    score: Optional[int] = None
+    text_preview: str
+    trust_level: str = "community"
+
+
 class AnswerResponse(BaseModel):
     question: str
     answer: str
     generator_model: str
     retrieval_strategy: str
     citations: List[Citation]
+    community_discussion: List[CommunityDiscussionItem]
     retrieved_context: List[HybridSearchResult]

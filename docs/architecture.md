@@ -908,3 +908,15 @@ Endpoints:
 GET /documents
 GET /documents/{document_id}
 This enables frontend document selection and prepares for future database-backed document management.
+
+## Community Discussion Layer
+
+ProteinScope now separates:
+
+Scientific evidence
+    → verified paper citations
+
+Community discussion
+    → Reddit/practitioner perspective
+    → lower-trust, displayed separately
+This prepares the product for multi-source retrieval while preserving trust boundaries.

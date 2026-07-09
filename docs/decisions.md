@@ -1127,3 +1127,17 @@ Current endpoints:
 
 * GET /documents
 * GET /documents/{document_id}
+
+## Decision 63: Separate Scientific Citations From Community Discussion
+
+We added a separate response layer for community discussion.
+
+Reason:
+- Reddit/community data should not be mixed with verified scientific citations
+- scientific paper chunks remain the source of truth for grounded answers
+- community discussion is lower-trust and should be displayed separately
+- prepares ProteinScope for multi-source retrieval without confusing evidence levels
+
+Current behavior:
+- /answer returns `community_discussion`
+- community discussion is currently empty until Reddit ingestion/retrieval is added
