@@ -7,7 +7,6 @@ from app.generation.schemas import (
     AnswerRequest,
     AnswerResponse,
     Citation,
-    CommunityDiscussionItem,
 )
 from app.guardrails.answer_guardrails import (
     add_medical_disclaimer_if_needed,
@@ -36,23 +35,6 @@ def build_citations(results) -> List[Citation]:
         )
 
     return citations
-
-
-def build_community_discussion_placeholder(
-    request: AnswerRequest,
-) -> List[CommunityDiscussionItem]:
-    """
-    Placeholder for Phase 12.
-
-    Community discussion will be retrieved from Reddit/community sources later.
-    For now, keep the response shape stable without mixing community data into
-    scientific citations.
-    """
-
-    if not request.include_community_discussion:
-        return []
-
-    return []
 
 
 def generate_grounded_answer(request: AnswerRequest) -> AnswerResponse:
@@ -96,7 +78,6 @@ def generate_grounded_answer(request: AnswerRequest) -> AnswerResponse:
     )
 
     citations = build_citations(hybrid_results)
-    community_discussion = build_community_discussion_placeholder(request)
 
     context_is_valid, context_guardrail_message = validate_retrieved_context(
         hybrid_results
@@ -123,7 +104,6 @@ def generate_grounded_answer(request: AnswerRequest) -> AnswerResponse:
             generator_model=generator.model_name(),
             retrieval_strategy=f"hybrid_dense_bm25_rrf_guardrail_blocked: {context_guardrail_message}",
             citations=citations,
-            community_discussion=community_discussion,
             retrieved_context=hybrid_results,
         )
 
@@ -160,6 +140,5 @@ def generate_grounded_answer(request: AnswerRequest) -> AnswerResponse:
         generator_model=generator.model_name(),
         retrieval_strategy=f"hybrid_dense_bm25_rrf_guardrail: {answer_guardrail_message}",
         citations=citations,
-        community_discussion=community_discussion,
         retrieved_context=hybrid_results,
     )

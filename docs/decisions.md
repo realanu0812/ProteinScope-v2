@@ -11,14 +11,15 @@ Reason:
 - Easier deployment coordination
 - Better for a full-stack AI project
 
-## Decision 2: Separate Evidence and Community Sources
+## Decision 2: Focus MVP on Verified Scientific Papers
 
-Scientific papers and Reddit/community experiences will be stored and retrieved separately.
+The MVP will focus on scientific paper ingestion, retrieval, and citation-backed answering.
 
 Reason:
-- Scientific evidence is verified
-- Reddit data is anecdotal
-- The final answer should never mix anecdotal reports with scientific claims
+- Keeps the product scope clear
+- Avoids mixing anecdotal community discussion with verified scientific evidence
+- Makes retrieval, evaluation, and guardrails easier to reason about
+- Community sources such as Reddit can be revisited later as a separate trust-aware source layer
 
 ## Decision 3: Use Next.js for Frontend
 
@@ -106,9 +107,9 @@ OCR will be added later for scanned documents.
 Every ingested document will have a source_type and trust_level.
 
 Reason:
-- Scientific evidence and community experiences must remain separated
-- Helps retrieval routing
-- Prevents anecdotal data from being treated as verified evidence
+- Keeps source trust explicit from ingestion onward
+- Helps retrieval routing and filtering
+- Prevents low-trust sources from being treated as verified evidence if added later
 - Supports safer answer generation
 
 ## Decision 10: Export Ingestion Output as JSON
@@ -597,7 +598,7 @@ Default behavior:
 Reason:
 
 * improves retrieval precision
-* supports source-separated retrieval
+* supports source-aware retrieval
 * prepares for Evidence vs Community routing
 * supports future user/workspace-specific retrieval
 
@@ -683,7 +684,7 @@ Supported filters:
 Reason:
 - Hybrid retrieval should not combine filtered dense results with unfiltered BM25 results
 - Prevents references or wrong source types from leaking into hybrid results
-- Prepares the system for source-separated Evidence vs Community retrieval
+- Prepares the system for future source-aware retrieval if additional source types are added
 - Keeps retrieval behavior consistent across dense and sparse search
 
 ## Decision 41: Log Hybrid Retrieval Rankings
@@ -948,7 +949,7 @@ Reason:
 - reduces hallucination risk
 - prevents unsupported answers
 - improves scientific answer safety
-- prepares for Reddit/community-source separation and medical-advice handling
+- prepares for medical-advice handling and future source-aware safety policies
 
 Current limitation:
 - retrieval confidence threshold is heuristic
@@ -1128,33 +1129,3 @@ Current endpoints:
 * GET /documents
 * GET /documents/{document_id}
 
-## Decision 63: Separate Scientific Citations From Community Discussion
-
-We added a separate response layer for community discussion.
-
-Reason:
-- Reddit/community data should not be mixed with verified scientific citations
-- scientific paper chunks remain the source of truth for grounded answers
-- community discussion is lower-trust and should be displayed separately
-- prepares ProteinScope for multi-source retrieval without confusing evidence levels
-
-Current behavior:
-- /answer returns `community_discussion`
-- community discussion is currently empty until Reddit ingestion/retrieval is added
-
-## Decision 64: Add Manual Community Discussion Ingestion
-
-We added a manual community source ingestion endpoint.
-
-Endpoint:
-- POST /community/ingest
-
-Reason:
-- lets us design the community data model before adding Reddit API/search integration
-- keeps community discussion separate from verified scientific evidence
-- supports lower-trust source metadata such as subreddit, thread title, URL, and score
-- prepares for trust-aware multi-source retrieval
-
-Current limitation:
-- sources are manually supplied
-- next step is chunking, embedding, and indexing community records

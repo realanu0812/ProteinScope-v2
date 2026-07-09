@@ -1,26 +1,21 @@
 # Architecture
 
-ProteinScope v2 uses a source-separated RAG architecture.
+ProteinScope v2 uses a scientific-paper-focused RAG architecture.
 
 ## Layers
 
 1. Evidence Layer
    - Research papers
-   - PubMed
    - Scientific articles
 
-2. Community Layer
-   - Reddit discussions
-   - User experiences
-
-3. Retrieval Layer
+2. Retrieval Layer
    - Dense retrieval
    - Hybrid search
    - Reranking
 
-4. Generation Layer
+3. Generation Layer
    - Citation-backed answers
-   - Evidence vs experience separation
+   - grounded answer generation
 
 ## High-Level System Flow
 
@@ -40,21 +35,17 @@ LLM Provider
 
 User Question
     ↓
-Query Router
-    ↓
 Scientific Evidence Retriever
-    ↓
-Community Experience Retriever
     ↓
 Reranker
     ↓
 Answer Generator
     ↓
-Evidence vs Experience Response
+Citation-Backed Response
 
 ## Ingestion Pipeline
 
-ProteinScope uses a source-aware ingestion pipeline.
+ProteinScope uses a scientific-document ingestion pipeline.
 
 Raw Source
     ↓
@@ -488,7 +479,7 @@ Reason:
 
 ## Metadata-Aware Dense Retrieval
 
-The `/search` endpoint now supports optional metadata filters.
+The `/search` endpoint supports optional metadata filters over scientific document chunks.
 
 Example request:
 
@@ -711,7 +702,7 @@ Generator
 Answer + Citations
 Endpoint:
 POST /answer
-Current generator is a simple placeholder before LLM integration.
+Answers are generated from retrieved scientific evidence and returned with citations.
 
 ## Groq Generation Provider
 
@@ -909,32 +900,3 @@ GET /documents
 GET /documents/{document_id}
 This enables frontend document selection and prepares for future database-backed document management.
 
-## Community Discussion Layer
-
-ProteinScope now separates:
-
-Scientific evidence
-    → verified paper citations
-
-Community discussion
-    → Reddit/practitioner perspective
-    → lower-trust, displayed separately
-This prepares the product for multi-source retrieval while preserving trust boundaries.
-
-## Community Source Ingestion
-
-ProteinScope now supports manual ingestion of community discussion sources.
-
-Flow:
-
-```text
-Community source input
-    ↓
-CommunitySourceRecord
-    ↓
-outputs/community/{topic}_community_sources.json
-
-Community records are labeled with:
-source_type = community_discussion
-trust_level = community
-This preserves trust separation before retrieval/indexing.

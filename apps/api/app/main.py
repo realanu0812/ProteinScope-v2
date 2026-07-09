@@ -7,8 +7,6 @@ from fastapi import FastAPI, File, HTTPException, UploadFile  # type: ignore
 from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
 from app.chunking.reporter import export_chunk_report
-from app.community.registry import build_community_records, export_community_sources
-from app.community.schemas import CommunityIngestRequest, CommunityIngestResponse
 from app.dependencies import get_embedding_provider, get_reranker, get_vector_store
 from app.documents.registry import (
     build_document_record,
@@ -82,24 +80,6 @@ def get_document(document_id: str):
 
     return record
 
-
-@app.post("/community/ingest", response_model=CommunityIngestResponse)
-def ingest_community_sources(request: CommunityIngestRequest):
-    records = build_community_records(request)
-    output_path = export_community_sources(
-        topic=request.topic,
-        records=records,
-    )
-
-    return CommunityIngestResponse(
-        status="completed",
-        message="Community discussion sources ingested successfully",
-        topic=request.topic,
-        document_id=request.document_id,
-        source_count=len(records),
-        output_path=output_path,
-        sources=records,
-    )
 
 
 @app.post("/ingest/pdf", response_model=IngestionResponse)
