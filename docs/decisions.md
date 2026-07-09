@@ -1141,3 +1141,20 @@ Reason:
 Current behavior:
 - /answer returns `community_discussion`
 - community discussion is currently empty until Reddit ingestion/retrieval is added
+
+## Decision 64: Add Manual Community Discussion Ingestion
+
+We added a manual community source ingestion endpoint.
+
+Endpoint:
+- POST /community/ingest
+
+Reason:
+- lets us design the community data model before adding Reddit API/search integration
+- keeps community discussion separate from verified scientific evidence
+- supports lower-trust source metadata such as subreddit, thread title, URL, and score
+- prepares for trust-aware multi-source retrieval
+
+Current limitation:
+- sources are manually supplied
+- next step is chunking, embedding, and indexing community records

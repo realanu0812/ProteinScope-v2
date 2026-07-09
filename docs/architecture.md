@@ -920,3 +920,21 @@ Community discussion
     → Reddit/practitioner perspective
     → lower-trust, displayed separately
 This prepares the product for multi-source retrieval while preserving trust boundaries.
+
+## Community Source Ingestion
+
+ProteinScope now supports manual ingestion of community discussion sources.
+
+Flow:
+
+```text
+Community source input
+    ↓
+CommunitySourceRecord
+    ↓
+outputs/community/{topic}_community_sources.json
+
+Community records are labeled with:
+source_type = community_discussion
+trust_level = community
+This preserves trust separation before retrieval/indexing.

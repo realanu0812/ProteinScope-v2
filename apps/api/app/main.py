@@ -3,11 +3,12 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile  # type: ignore
-from fastapi.middleware.cors import CORSMiddleware
 
 from app.chunking.chunker import chunk_document
 from app.chunking.exporter import export_chunks
 from app.chunking.reporter import export_chunk_report
+from app.community.registry import build_community_records, export_community_sources
+from app.community.schemas import CommunityIngestRequest, CommunityIngestResponse
 from app.dependencies import get_embedding_provider, get_reranker, get_vector_store
 from app.documents.registry import (
     build_document_record,
@@ -39,12 +40,6 @@ from app.retrieval.schemas import (
     SearchResponse,
 )
 
-ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://192.168.1.38:3000",
-]
-
 
 app = FastAPI(
     title="ProteinScope v2 API",
@@ -52,13 +47,6 @@ app = FastAPI(
     version="0.1.0",
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 app.add_middleware(LatencyLoggingMiddleware)
 
 UPLOAD_DIR = Path("uploads")
@@ -93,6 +81,25 @@ def get_document(document_id: str):
         raise HTTPException(status_code=404, detail="Document not found")
 
     return record
+
+
+@app.post("/community/ingest", response_model=CommunityIngestResponse)
+def ingest_community_sources(request: CommunityIngestRequest):
+    records = build_community_records(request)
+    output_path = export_community_sources(
+        topic=request.topic,
+        records=records,
+    )
+
+    return CommunityIngestResponse(
+        status="completed",
+        message="Community discussion sources ingested successfully",
+        topic=request.topic,
+        document_id=request.document_id,
+        source_count=len(records),
+        output_path=output_path,
+        sources=records,
+    )
 
 
 @app.post("/ingest/pdf", response_model=IngestionResponse)
