@@ -1168,3 +1168,18 @@ Reason:
 - helps users start asking useful paper-level questions faster
 - improves product polish without changing retrieval/generation logic
 - keeps answer interaction lightweight and understandable
+
+## Decision 65: Polish Single-Paper QA User Flow
+
+We improved the frontend flow around selecting a paper and asking questions.
+
+Changes:
+- clarified that questions are scoped to the active paper
+- improved hero positioning and feature tags
+- renamed document language to paper-focused wording
+- made upload and ask sections easier to understand
+
+Reason:
+- keeps the MVP focused on fast single-paper scientific QA
+- improves demo clarity
+- avoids unnecessary debug UI for normal users

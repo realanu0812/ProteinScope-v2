@@ -377,20 +377,32 @@ export default function Home() {
           </h1>
           <p className="mt-3 max-w-2xl text-zinc-400">
             Upload a research paper, index it with GROBID + Qdrant, and ask
-            grounded questions with citations.
+            grounded questions with citation-backed answers.
           </p>
+
+          <div className="mt-5 flex flex-wrap gap-2 text-xs text-zinc-400">
+            <span className="rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1">
+              Scientific PDF parsing
+            </span>
+            <span className="rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1">
+              Hybrid retrieval
+            </span>
+            <span className="rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1">
+              Grounded citations
+            </span>
+          </div>
         </section>
 
         {chunksPath && documentId && (
           <section className="rounded-2xl border border-emerald-900 bg-emerald-950/20 p-4 text-sm text-emerald-100">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-semibold">Active document loaded</p>
+                <p className="font-semibold">Active paper</p>
                 <p className="mt-1 text-emerald-200/80">
                   {documentTitle || documentId}
                 </p>
-                <p className="mt-1 break-all text-xs text-emerald-200/60">
-                  {chunksPath}
+                <p className="mt-1 text-xs text-emerald-200/60">
+                  Questions are currently scoped to this selected paper.
                 </p>
               </div>
 
@@ -406,7 +418,12 @@ export default function Home() {
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-semibold">0. Indexed Documents</h2>
+            <div>
+              <h2 className="text-xl font-semibold">Indexed papers</h2>
+              <p className="mt-1 text-sm text-zinc-500">
+                Select a paper to ask questions against its indexed context.
+              </p>
+            </div>
 
             <button
               onClick={fetchDocuments}
@@ -476,7 +493,10 @@ export default function Home() {
         </section>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-          <h2 className="text-xl font-semibold">1. Upload PDF</h2>
+          <h2 className="text-xl font-semibold">Upload a new paper</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            PDFs are parsed, chunked, embedded, and indexed before they appear in the paper list.
+          </p>
 
           <div className="mt-4 flex flex-col gap-4 sm:flex-row">
             <input
@@ -536,7 +556,16 @@ export default function Home() {
         </section>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-          <h2 className="text-xl font-semibold">2. Ask Question</h2>
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Ask a question</h2>
+              <p className="mt-1 text-sm text-zinc-500">
+                {documentTitle
+                  ? `Using: ${documentTitle}`
+                  : "Select a paper first to enable grounded answering."}
+              </p>
+            </div>
+          </div>
 
           {!chunksPath && (
             <p className="mt-3 rounded-xl border border-yellow-900 bg-yellow-950/30 p-4 text-sm text-yellow-100">
@@ -556,7 +585,7 @@ export default function Home() {
               <button
                 key={suggestedQuestion}
                 onClick={() => setQuestion(suggestedQuestion)}
-                className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300 hover:bg-zinc-800"
+                className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-zinc-500 hover:bg-zinc-800"
               >
                 {suggestedQuestion}
               </button>
